@@ -486,32 +486,33 @@ DESTINATION is an actual stream (rather than nil for a string)."
   x)
 
 (defun dimension-build-info (form result)
-  (declare (special bkptht bkptdp lines break))
   ;; Usually the result of (MFUNCALL '$@ ...) is a string,
   ;; but ensure that output makes sense even if it is not.
-  (flet ((display-item (item item-label)
+  (flet ((prepare-item (k item item-label)
 	   (let ((s (format nil
 			    "~A: ~A"
 			    (intl:gettext item-label)
 			    (coerce (mstring (mfuncall '$@ form item)) 'string))))
-	     (forcebreak (reverse (coerce s 'list)) 0))))
-    (let ((bkptht 1)
-	  (bkptdp 1)
-	  (lines 0)
-	  (break 0))
-      (forcebreak result 0)
-      (display-item '$version "Maxima-version")
-      (display-item '$timestamp "Maxima build date")
-      (display-item '$host "Host type")
-      (display-item '$lisp_name "Lisp implementation type")
-      (display-item '$lisp_version "Lisp implementation version")
-      (display-item '$maxima_userdir "User dir")
-      (display-item '$maxima_tempdir "Temp dir")
-      (display-item '$maxima_objdir "Object dir")
-      (display-item '$maxima_frontend "Frontend")
-      (when $maxima_frontend
-	(display-item '$maxima_frontend_version "Frontend version"))
-      nil)))
+	     (append (list 0 k) (reverse (coerce s 'list))))))
+    (let*
+      ((items (append (list (prepare-item  4 '$version "Maxima-version")
+                            (prepare-item  3 '$timestamp "Maxima build date")
+                            (prepare-item  2 '$host "Host type")
+                            (prepare-item  1 '$lisp_name "Lisp implementation type")
+                            (prepare-item  0 '$lisp_version "Lisp implementation version")
+                            (prepare-item -1 '$maxima_userdir "User dir")
+                            (prepare-item -2 '$maxima_tempdir "Temp dir")
+                            (prepare-item -3 '$maxima_objdir "Object dir")
+                            (prepare-item -4 '$maxima_frontend "Frontend"))
+                      (when $maxima_frontend
+                        (list (prepare-item -5 '$maxima_frontend_version "Frontend version")))))
+       (max-item-width (apply #'max (mapcar (lambda (item) (- (length item) 2)) items))))
+      (declare (special width height depth))
+      (setq width max-item-width height 5 depth (if $maxima_frontend 5 4))
+      (loop for i from (1- (length items)) downto 1
+            do (setf (car (nth (1- i) items)) (- 2 (length (nth i items)))))
+      (update-heights height depth)
+      (append (list (list (- width (- (length (first items)) 2)) 0)) items result))))
 
 (setf (get '%build_info 'dimension) 'dimension-build-info)
 
