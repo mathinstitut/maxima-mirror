@@ -496,7 +496,7 @@ DESTINATION is an actual stream (rather than nil for a string)."
 			    (coerce (mstring (mfuncall '$@ form item)) 'string))))
 	     (forcebreak (reverse (coerce s 'list)) 0))))
     (let ((bkptht 1)
-	  (bkptdp 1)
+	  (bkptdp 0)
 	  (lines 0)
 	  (break 0))
       (forcebreak result 0)
