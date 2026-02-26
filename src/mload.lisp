@@ -206,8 +206,6 @@
                &aux tem   (possible '(:demo :batch :test)))
   "giving a second argument makes it use demo mode, ie pause after evaluation
    of each command line"
-  (declare (special $batch_answers_from_file))
-
   ;; Try to get rid of testsuite failures on machines that are low on RAM.
   ($garbage_collect)
   (cond
