@@ -237,7 +237,9 @@
           (setq $load_pathname (cl:namestring stream-truename))
           (format nil "~A" in-stream)))
        (*query-io* (if $batch_answers_from_file
-		       (make-two-way-stream in-stream (make-string-output-stream)) *query-io*)))
+		       (make-two-way-stream in-stream (make-string-output-stream)) *query-io*))
+       (*standard-input* (if $batch_answers_from_file
+			     in-stream *standard-input*)))
       (when (not *maxima-quiet*)
         (format t (intl:gettext "~%read and interpret ~A~%") in-stream-string-rep))
       (catch 'macsyma-quit (continue :stream in-stream :batch-or-demo-flag demo))
@@ -473,7 +475,8 @@
 	(progn
 	  (setq strm (open filename :direction :input))
 	  (when $batch_answers_from_file
-	    (setq *query-io* (make-two-way-stream strm out)))
+	    (setq *query-io* (make-two-way-stream strm out)
+		  *standard-input* strm))
 	  (setq start-real-time (get-internal-real-time))
 	  (setq start-run-time (get-internal-run-time))
 	  (while (not (eq 'eof (setq expr (mread strm 'eof))))
