@@ -164,7 +164,7 @@
 		  (mapcar #'(lambda (var val)
 			      `((mequal) ,var ,val))
 			  (cdr vars)
-			  (coerce x 'list)))
+			  x-list))
 	   (apply fv x-list)
 	   neval
 	   ierr))))))
