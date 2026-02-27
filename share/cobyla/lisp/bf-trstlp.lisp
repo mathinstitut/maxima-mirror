@@ -98,10 +98,10 @@
             (tagbody
              label10
               (setf (f2cl-lib:fref z-%data% (i j) ((1 n) (1 *)) z-%offset%)
-                      0.0)))
-          (setf (f2cl-lib:fref z-%data% (i i) ((1 n) (1 *)) z-%offset%) 1.0)
+                      (bigfloat 0.0))))
+          (setf (f2cl-lib:fref z-%data% (i i) ((1 n) (1 *)) z-%offset%) (bigfloat 1.0))
          label20
-          (setf (f2cl-lib:fref dx-%data% (i) ((1 *)) dx-%offset%) 0.0)))
+          (setf (f2cl-lib:fref dx-%data% (i) ((1 *)) dx-%offset%) (bigfloat 0.0))))
       (cond
         ((>= m 1)
          (f2cl-lib:fdo (k 1 (f2cl-lib:int-add k 1))
@@ -125,7 +125,7 @@
                     ((> i n) nil)
         (tagbody
          label50
-          (setf (f2cl-lib:fref sdirn-%data% (i) ((1 *)) sdirn-%offset%) 0.0)))
+          (setf (f2cl-lib:fref sdirn-%data% (i) ((1 *)) sdirn-%offset%) (bigfloat 0.0))))
       '""
       '"     end the current stage of the calculation if 3 consecutive iteratio"
       '"     have either failed to reduce the best calculated value of the obje"
@@ -252,7 +252,7 @@
          (setf (f2cl-lib:fref zdota-%data% (nact) ((1 *)) zdota-%offset%) tot)
          (setf (f2cl-lib:fref vmultc-%data% (icon) ((1 *)) vmultc-%offset%)
                  (f2cl-lib:fref vmultc-%data% (nact) ((1 *)) vmultc-%offset%))
-         (setf (f2cl-lib:fref vmultc-%data% (nact) ((1 *)) vmultc-%offset%) 0.0)
+         (setf (f2cl-lib:fref vmultc-%data% (nact) ((1 *)) vmultc-%offset%) (bigfloat 0.0))
          (go label210)))
       '""
       '"     the next instruction is reached if a deletion has to be made from"
@@ -313,7 +313,7 @@
                                            a-%offset%))))))))
          (setf (f2cl-lib:fref vmultd-%data% (k) ((1 *)) vmultd-%offset%) temp))
         (t
-         (setf (f2cl-lib:fref vmultd-%data% (k) ((1 *)) vmultd-%offset%) 0.0)))
+         (setf (f2cl-lib:fref vmultd-%data% (k) ((1 *)) vmultd-%offset%) (bigfloat 0.0))))
       (setf k (f2cl-lib:int-sub k 1))
       (if (> k 0) (go label130))
       (if (< ratio 0.0) (go label490))
@@ -327,7 +327,7 @@
         (tagbody
          label160
           (setf (f2cl-lib:fref vmultc-%data% (k) ((1 *)) vmultc-%offset%)
-                  (max 0.0
+                  (max (bigfloat 0.0)
                                   (-
                                    (f2cl-lib:fref vmultc-%data%
                                                   (k)
@@ -441,7 +441,7 @@
                                      a-%offset%))))))
       (if (= temp 0.0) (go label490))
       (setf (f2cl-lib:fref zdota-%data% (nact) ((1 *)) zdota-%offset%) temp)
-      (setf (f2cl-lib:fref vmultc-%data% (icon) ((1 *)) vmultc-%offset%) 0.0)
+      (setf (f2cl-lib:fref vmultc-%data% (icon) ((1 *)) vmultc-%offset%) (bigfloat 0.0))
       (setf (f2cl-lib:fref vmultc-%data% (nact) ((1 *)) vmultc-%offset%) ratio)
       '""
       '"     update iact and ensure that the objective function continues to be"
@@ -934,7 +934,7 @@
         (tagbody
          label470
           (setf (f2cl-lib:fref vmultc-%data% (k) ((1 *)) vmultc-%offset%)
-                  (max 0.0
+                  (max (bigfloat 0.0)
                                   (+
                                    (* temp
                                       (f2cl-lib:fref vmultc-%data%
@@ -957,7 +957,7 @@
       (setf mcon (f2cl-lib:int-add m 1))
       (setf icon mcon)
       (setf (f2cl-lib:fref iact-%data% (mcon) ((1 *)) iact-%offset%) mcon)
-      (setf (f2cl-lib:fref vmultc-%data% (mcon) ((1 *)) vmultc-%offset%) 0.0)
+      (setf (f2cl-lib:fref vmultc-%data% (mcon) ((1 *)) vmultc-%offset%) (bigfloat 0.0))
       (go label60)
       '""
       '"     we employ any freedom that may be available to reduce the objectiv"

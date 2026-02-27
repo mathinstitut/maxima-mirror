@@ -92,18 +92,18 @@
                         ((> j n) nil)
             (tagbody
               (setf (f2cl-lib:fref sim-%data% (i j) ((1 n) (1 *)) sim-%offset%)
-                      0.0)
+                      (bigfloat:bigfloat 0d0))
              label20
               (setf (f2cl-lib:fref simi-%data%
                                    (i j)
                                    ((1 n) (1 *))
                                    simi-%offset%)
-                      0.0)))
+                      (bigfloat:bigfloat 0.0))))
           (setf (f2cl-lib:fref sim-%data% (i i) ((1 n) (1 *)) sim-%offset%)
-                  rho)
+                  (bigfloat:bigfloat rho))
          label30
           (setf (f2cl-lib:fref simi-%data% (i i) ((1 n) (1 *)) simi-%offset%)
-                  temp)))
+                  (bigfloat:bigfloat temp))))
       (setf jdrop np)
       (setf ibrnch 0)
       '""
@@ -174,7 +174,7 @@
                                                  x-%offset%)
                                   %ret))))))
       (setf (f2cl-lib:fref con-%data% (mp) ((1 *)) con-%offset%) f)
-      (setf (f2cl-lib:fref con-%data% (mpp) ((1 *)) con-%offset%) resmax)
+      (setf (f2cl-lib:fref con-%data% (mpp) ((1 *)) con-%offset%) (bigfloat resmax))
       (if (= ibrnch 1) (go label440))
       '""
       '"     set the recently calculated function values in a column of datmat."
@@ -237,7 +237,7 @@
                                      (jdrop k)
                                      ((1 n) (1 *))
                                      sim-%offset%)
-                        (- rho))
+                        (bigfloat (- rho)))
                 (setf temp (coerce 0.0f0 'bigfloat))
                 (f2cl-lib:fdo (i k (f2cl-lib:int-add i 1))
                               ((> i jdrop) nil)
@@ -259,7 +259,7 @@
         ((<= nfvals n)
          (setf jdrop nfvals)
          (setf (f2cl-lib:fref x-%data% (jdrop) ((1 *)) x-%offset%)
-                 (+ (f2cl-lib:fref x-%data% (jdrop) ((1 *)) x-%offset%) rho))
+                 (+ (f2cl-lib:fref x-%data% (jdrop) ((1 *)) x-%offset%) (bigfloat rho)))
          (go label40)))
      label130
       (setf ibrnch 1)
@@ -350,7 +350,7 @@
                                   (i nbest)
                                   ((1 n) (1 *))
                                   sim-%offset%)
-                     0.0)
+                     (bigfloat:bigfloat 0.0))
              (setf (f2cl-lib:fref sim-%data% (i np) ((1 n) (1 *)) sim-%offset%)
                      (+
                       (f2cl-lib:fref sim-%data%
@@ -713,7 +713,8 @@
       '"     variables are altered from x(0) to x(0)+dx."
       '""
       (setf resnew 0.0)
-      (setf (f2cl-lib:fref con-%data% (mp) ((1 *)) con-%offset%) 0.0)
+       (setf (f2cl-lib:fref con-%data% (mp) ((1 *)) con-%offset%)
+             (bigfloat:bigfloat 0.0))
       (f2cl-lib:fdo (k 1 (f2cl-lib:int-add k 1))
                     ((> k mp) nil)
         (tagbody
