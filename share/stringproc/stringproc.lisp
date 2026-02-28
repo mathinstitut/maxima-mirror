@@ -546,8 +546,8 @@ TODO: Comments on Xmaxima in Windows.
 
 
 ;; Convert a Lisp character into a string of length 1.
-;;
-(defun $cunlisp (lc) ;; at Maxima level only for testing
+;; This is implemented as Lisp function so that it is not visible to the user.
+(defun cunlisp (lc)
   (unless (characterp lc)
     (gf-merror "cunlisp: argument must be a Lisp character") )
   (string lc) )
