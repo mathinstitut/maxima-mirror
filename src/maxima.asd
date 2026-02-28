@@ -573,6 +573,8 @@
 		 (:file "conjugate")
                  (:file "expintegral")
                  (:file "gamma")
+		 (:file "hstep")
+		 (:file "sinc")
 		 (:file "mstuff")))
    (:module polynomial :pathname ""
     :depends-on (defmfun)
