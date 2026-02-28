@@ -809,6 +809,11 @@ Example expression is --------------
 @end defvr
 
 @c -----------------------------------------------------------------------------
+@anchor{errexp1}
+@defvr {Global variable} errexp1
+See @mrefdot{error_syms}
+@end defvr
+
 @anchor{error_syms}
 @defvr {Option variable} error_syms
 Default value: @code{[errexp1, errexp2, errexp3]}
