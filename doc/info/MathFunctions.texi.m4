@@ -1430,6 +1430,10 @@ Returns the generalized factorial, defined as
 @code{x (x-z) (x - 2 z) ... (x - (y - 1) z)}.  Thus, when @var{x} is an integer,
 @code{genfact (x, x, 1) = x!} and @code{genfact (x, x/2, 2) = x!!}.
 
+When @var{x} and @var{z} are integers,
+and @code{floor(@var{y})} is an integer,
+@code{genfact(@var{x}, @var{y}, @var{y})} simplifies to a number.
+
 @opencatbox{Categories:}
 @category{Gamma and factorial functions}
 @closecatbox
