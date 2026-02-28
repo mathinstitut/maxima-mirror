@@ -1593,7 +1593,7 @@ interfaces/emacs/misc/Makefile interfaces/xmaxima/Makefile \
 interfaces/xmaxima/autoconf-variables.tcl interfaces/xmaxima/Tkmaxima/Header.tcl \
 interfaces/xmaxima/doc/Makefile interfaces/xmaxima/doc/figures/Makefile \
 interfaces/xmaxima/msgs/Makefile interfaces/xmaxima/win32/Makefile \
-plotting/mgnuplot share/Makefile demo/Makefile plotting/Makefile locale/Makefile \
+share/Makefile demo/Makefile locale/Makefile \
 share/contrib/Makefile
 share/contrib/guess/Makefile \
 share/contrib/guess/doc/Makefile \

@@ -10,9 +10,6 @@
   (values (stringp val)
           "must be a string"))
 
-(defmvar $mgnuplot_command "mgnuplot"
-  "The command (a string) that will run mgnuplot"
-  :setting-predicate #'string-predicate)
 (defmvar $geomview_command "geomview"
   "The command (a string) that will run geomview"
   :setting-predicate #'string-predicate)
@@ -89,14 +86,6 @@ plot3d([cos(y)*(10.0+6*cos(x)), sin(y)*(10.0+6*cos(x)),-6*sin(x)],
       (merror (intl:gettext "join: both arguments must be lists."))))
 
 (defun coerce-float (x) ($float (meval* x)))
-
-;; This variable seems to be a remnant of when Maxima was distributed with
-;; two plotting programs: mgnuplot and omplotdata. omplotdata no longer
-;; exists and the only program left in the directory *maxima-plotdir* is
-;; a version of mgnuplot that is no longer usable.
-;; Let's leave it for now, in case we ever recover mgnuplot (to get rid
-;; of it would imply modifying init-cl.lisp when this variable is set.
-(defvar *maxima-plotdir* "")
 
 ;; Global plot options list; this is a property list.. It is not a
 ;; Maxima variable, to discourage users from changing it directly; it
@@ -2103,11 +2092,11 @@ plot3d([cos(y)*(10.0+6*cos(x)), sin(y)*(10.0+6*cos(x)),-6*sin(x)],
 
 ;; one of the possible formats
 (defun check-option-format (option &aux formats)
-  (setq formats '($geomview $gnuplot $gnuplot_pipes $mgnuplot $xmaxima))
+  (setq formats '($geomview $gnuplot $gnuplot_pipes $xmaxima))
   (unless (member (cadr option) formats)
     (merror
      (intl:gettext
-      "Wrong argument ~M for option ~M. Must one of the following symbols: geomview, gnuplot, mgnuplot, xmaxima (or gnuplot_pipes in Unix)")
+      "Wrong argument ~M for option ~M. Must one of the following symbols: geomview, gnuplot, xmaxima (or gnuplot_pipes in Unix)")
      (cadr option) (car option)))
   (cadr option))
 

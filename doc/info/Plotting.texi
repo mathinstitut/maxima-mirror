@@ -123,15 +123,6 @@ file @code{random-string.gnuplot} in the temporary directory, where
 @code{random-string} is a 16-character random string.
 
 @item
-@strong{mgnuplot}
-
-Mgnuplot is a Tk-based wrapper around gnuplot. It is an old interface
-still included in the Maxima distribution, but it is currently disabled
-because it does not have most of the features introduced by recent
-versions of the plotting commands. Mgnuplot requires an external gnuplot
-installation and, in Unix systems, the Tcl/Tk system.
-
-@item
 @strong{xmaxima}
 
 Xmaxima is a Tcl/Tk graphical interface for Maxima that can also be used
@@ -1527,7 +1518,7 @@ gnuplot, gnuplot_pipes, xmaxima
 Default value: @code{gnuplot}, in Windows systems, or @code{gnuplot_pipes} in
 other systems.
 
-Where @var{format} is one of the following: gnuplot, xmaxima, mgnuplot,
+Where @var{format} is one of the following: gnuplot, xmaxima,
 gnuplot_pipes or geomview. The three possibilities:
 @code{[plot_format, gnuplot]}, @code{[plot_format, gnuplot_pipes]} and
 @code{[plot_format, xmaxima]}, can be abbreviated

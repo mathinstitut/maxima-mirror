@@ -53,7 +53,6 @@ maxima [options] --batch-string='batch_answers_from_file:false; ...'
                  *maxima-docdir*
                  *maxima-infodir*
                  *maxima-htmldir*
-                 *maxima-plotdir*
                  *maxima-layout-autotools*
                  *maxima-userdir*
                  *maxima-tempdir*
@@ -105,8 +104,7 @@ maxima [options] --batch-string='batch_answers_from_file:false; ...'
     (setq *maxima-testsdir*  (combine-path datadir package-version "tests"))
     (setq *maxima-docdir*    (combine-path datadir package-version "doc"))
     (setq *maxima-infodir*   infodir)
-    (setq *maxima-htmldir*   (combine-path datadir package-version "doc" "html"))
-    (setq *maxima-plotdir*   (combine-path libexecdir package-version))))
+    (setq *maxima-htmldir*   (combine-path datadir package-version "doc" "html"))))
 
 (defun set-pathnames-without-autoconf (maxima-prefix-env maxima-docprefix-env)
   (let* ((maxima-prefix (if maxima-prefix-env
@@ -125,8 +123,7 @@ maxima [options] --batch-string='batch_answers_from_file:false; ...'
 			        maxima-prefix)))
       (setq *maxima-docdir*    (combine-path maxima-doc-prefix "doc"))
       (setq *maxima-infodir*   (combine-path maxima-doc-prefix "doc" "info"))
-      (setq *maxima-htmldir*   (combine-path maxima-doc-prefix "doc" "html")))
-    (setq *maxima-plotdir*   (combine-path maxima-prefix "plotting"))))
+      (setq *maxima-htmldir*   (combine-path maxima-doc-prefix "doc" "html")))))
 
 (defun default-userdir ()
   (let ((home-env (or (maxima-getenv "HOME") (maxima-getenv "USERPROFILE")))
