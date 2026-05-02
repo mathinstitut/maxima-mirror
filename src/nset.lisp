@@ -1173,8 +1173,10 @@
 	     (funcall opfn s)))
 
 	  (op-props
-	   ($apply f ($listify s)))
-	  
+	   (setq s (require-list-or-set s '$xreduce))
+	   (unless (eq init 'no-init)
+	     (setq s (cons init s)))
+	   ($apply f (cons '(mlist) s)))
 	  (t
 	   (rl-reduce f ($listify s) nil init '$xreduce)))))
 
