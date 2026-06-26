@@ -169,6 +169,7 @@
      ((:file "globals")))
    (:module info
      :source-pathname ""
+     :depends-on ("chipz")
      :components
      ((:file "pregexp")
       (:file "cl-info")))
