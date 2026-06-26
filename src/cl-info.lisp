@@ -248,17 +248,55 @@
      (char-count (caddr value))
      (text (make-string char-count))
      (path+filename (merge-pathnames (make-pathname :name filename) dir-name)))
-    (handler-case
-	(with-open-file (in path+filename :direction :input)
-	  (unless (plusp byte-offset)
-	    ;; If byte-offset isn't positive there must be some error in
-	    ;; the index.  Return nil and let the caller deal with it.
-	    (return-from read-info-text nil))
-	  (file-position in byte-offset)
-	  (read-sequence text in :start 0 :end char-count)
-	  text)
-      (error () (maxima::merror "Cannot find documentation for `~M': missing info file ~M~%"
-				(car parameters) (namestring path+filename))))))
+    (format t "filename = ~S~%" filename)
+    (format t "path+filename = ~S~%" path+filename)
+    (unless (plusp byte-offset)
+      ;; If byte-offset isn't positive there must be some error in
+      ;; the index.  Return nil and let the caller deal with it.
+      (return-from read-info-text nil))
+    (cond
+      ((probe-file path+filename)
+       ;; Uncompressed info files
+       (handler-case
+	   (with-open-file (in path+filename :direction :input)
+	     (file-position in byte-offset)
+	     (read-sequence text in :start 0 :end char-count)
+	     text)
+         (error ()
+           (maxima::merror "Cannot find documentation for `~M': missing info file ~M~%"
+			   (car parameters) (namestring path+filename)))))
+      (t
+       ;; Uncompressed info file doesn't exist.  Let's try with a "gz" extension.
+       (setf path+filename (merge-pathnames (make-pathname :type "gz")
+                                            path+filename))
+       (flet ((chipz-decompress-stream (in out &key (format 'chipz:gzip))
+                (let ((state (chipz:make-dstate format)))
+                  (chipz::%decompress/stream-stream
+                   out state in (chipz::decompress-fun-for-state state)))))
+         (let (temp-file)
+           (unwind-protect
+                (handler-case
+                    (progn
+                      (with-open-file (gz path+filename :element-type '(unsigned-byte 8))
+                        (setf temp-file (concatenate 'string
+                                                     maxima::*maxima-tempdir*
+                                                     "/"
+                                                     filename
+                                                     (format nil ".~D" (maxima::getpid))))
+                        (format t "temp-file = ~A~%" temp-file)
+                        (with-open-file (s temp-file
+                                           :direction :output
+                                           :if-exists :supersede
+                                           :element-type '(unsigned-byte 8))
+                          (chipz-decompress-stream gz s)))
+                      (with-open-file (in temp-file :direction :input)
+                        (file-position in byte-offset)
+                        (read-sequence text in :start 0 :end char-count)
+                        text))
+                  (error () (maxima::merror "Cannot find documentation for `~M': missing info file ~M~%"
+				            (car parameters) (namestring path+filename))))
+             (when temp-file
+               (delete-file temp-file)))))))))
 
 ; --------------- build help topic indices ---------------
 
