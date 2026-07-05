@@ -130,8 +130,9 @@ uninstall-maxima-index: maxima-index.lisp maxima-index-html.lisp
 clean-local: clean-info clean-html
 
 clean-info:
-	rm -f $(wildcard maxima.info* maxima-index.lisp maxima-index-html.lisp)
-	rm -f maxima.fns
+	rm -f $(wildcard maxima.info* maxima-info.info* maxima-index.lisp maxima-index-html.lisp)
+	rm -f maxima.fns build-html-index.log
+	rm -f $(patsubst $(srcdir)/%.texi.m4,%.texi,$(wildcard $(srcdir)/*.texi.m4))
 
 clean-html:
 	rm -f $(wildcard *.html) \

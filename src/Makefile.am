@@ -79,7 +79,15 @@ bd:
 	for l in $(lisps_enabled); do for d in $(binary_subdirs); do $(MKDIR_P) binary-$$l$$d; done; done
 
 ## Some hunks of lisp that get used by more than one implementation
-LOADDEFSYSTEM = (load "$(top_srcdir)/lisp-utils/defsystem.lisp") (mk:add-registry-location "$(top_srcdir)/src/")
+##
+## *MAXIMA-BINARY-DIRECTORY* tells maxima.system (for the lisps that
+## would otherwise derive their binary output directory from where
+## maxima.system itself was loaded from, i.e. the source directory)
+## to instead write compiled binaries under the build directory, so
+## that out-of-tree builds (top_builddir != top_srcdir) don't leave
+## generated files behind in the source tree. It is a no-op for
+## in-tree builds, where the two directories are the same.
+LOADDEFSYSTEM = (defparameter cl-user::*maxima-binary-directory* "$(abs_top_builddir)/src/") (load "$(top_srcdir)/lisp-utils/defsystem.lisp") (mk:add-registry-location "$(top_srcdir)/src/")
 LOADMAKEDEPENDS = (load "$(top_srcdir)/lisp-utils/make-depends.lisp")
 DS_OOS = funcall (intern (symbol-name :operate-on-system) :mk) "maxima"
 if QUIET_BUILD
