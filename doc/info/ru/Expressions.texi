@@ -1913,6 +1913,7 @@ if x ## y then
 @end deffn
 
 @c NEEDS WORK
+@anchor{nounify}
 @deffn {Функция} nounify (@var{f})
 Возвращает невычисляемую форму функции с именем @var{f}. Это 
 необходимо, если требуется представить имя вычисляемой функции так, 
@@ -2682,6 +2683,7 @@ if x ## y then
 
 @end deffn
 
+@anchor{verbify}
 @deffn {Функция} verbify (@var{f})
 Возвращает вычисляемую форму функции с именем @var{f}.
 

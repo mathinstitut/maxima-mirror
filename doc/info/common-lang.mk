@@ -15,6 +15,7 @@ maxima-index.lisp: maxima.info $(srcdir)/../build_index.pl
 # index to prevent spurious warnings.  Then after it's done, run
 # maxima to verify the index.
 maxima-index-html.lisp : index.html $(top_srcdir)/doc/info/build-html-index.lisp
+	$(MAKE) -C $(top_builddir)/src
 	MAXIMA_LANG_SUBDIR=$(lang) $(top_builddir)/maxima-local --no-init --no-verify-html-index --preload=$(top_srcdir)/doc/info/build-html-index.lisp --batch-string='build_and_dump_html_index("./*.html", lang = "$(lang)");'
 	MAXIMA_LANG_SUBDIR=$(lang) $(top_builddir)/maxima-local --no-init --batch-string="quit();"
 

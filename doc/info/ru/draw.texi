@@ -3528,6 +3528,7 @@ End of animation sequence
 
 @end deffn
 
+@anchor{draw2d}
 @deffn {Функция} draw2d (@var{option}, @var{graphic_object}, ...)
 
 Эта функция является сокращением для 

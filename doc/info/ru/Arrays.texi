@@ -33,6 +33,10 @@
 @c SAME TYPE AS WELL ??
 
 @c THIS DISCUSSION OF UNDECLARED ARRAYS REALLY WANTS TO BE SOMEWHERE ELSE
+@anchor{hashed array}
+@anchor{hashed arrays}
+@anchor{undeclared array}
+@anchor{undeclared arrays}
 Если пользователь присваивает значение переменной с индексом
 до того, как соответствующий массив объявлен, тогда создается
 необъявленный массив.  Необъявленные массивы, также известные как
