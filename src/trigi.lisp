@@ -1053,8 +1053,14 @@ the hashtable.")
            (*fpatan y (list x)))
            ;; Look up atan(extended real, extended real) in a hashtable. When the value
            ;; isn't found in the hashtable, return a nounform.
+           ;; Written with multiple-value-bind instead of gethash's default
+           ;; argument because GCL <= 2.6.15pre18 miscompiles a three-argument
+           ;; gethash (invalid C code); the default would also construct the
+           ;; nounform eagerly on every lookup.
            ((and (member x *extended-reals*) (member y *extended-reals*))
-            (gethash (list y x) *atan2-extended-real-hashtable* (give-up)))
+            (multiple-value-bind (value foundp)
+                (gethash (list y x) *atan2-extended-real-hashtable*)
+              (if foundp value (give-up))))
 
            ;;When either `x` or `y` is in ($und infinity $ind), give up
            ((or (member x '($und $infinity $ind)) (member y '($und $infinity $ind)))
