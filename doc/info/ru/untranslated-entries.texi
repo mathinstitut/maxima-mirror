@@ -1,0 +1,739 @@
+@c Not yet translated into Russian.
+@c This file collects individual entries (not whole chapters) whose
+@c English original is referenced by cross-references (@mref/@ref) from
+@c other, already-translated or English-fallback files, but which
+@c themselves have no Russian translation anywhere in this manual.
+@c Content below is copied verbatim from the English originals
+@c (DataTypes.texi, MathFunctions.texi, Evaluation.texi, Expressions.texi,
+@c Database.texi, drawdf.texi).
+
+@anchor{numer}
+@defvr {Option variable} numer
+
+@code{numer} causes some mathematical functions (including exponentiation)
+with numerical arguments to be evaluated in floating point.  It causes
+variables in @code{expr} which have been given numerals to be replaced by
+their values.  It also sets the @mref{float} switch on.
+
+See also %enumer
+
+Examples:
+
+@c ===beg===
+@c [sqrt(2), sin(1), 1/(1+sqrt(3))];
+@c [sqrt(2), sin(1), 1/(1+sqrt(3))],numer;
+@c ===end===
+@example
+@group
+(%i1) [sqrt(2), sin(1), 1/(1+sqrt(3))];
+                                        1
+(%o1)            [sqrt(2), sin(1), -----------]
+                                   sqrt(3) + 1
+@end group
+@group
+(%i2) [sqrt(2), sin(1), 1/(1+sqrt(3))],numer;
+(%o2) [1.414213562373095, 0.8414709848078965, 0.3660254037844387]
+@end group
+@end example
+
+@opencatbox{Categories:}
+@category{Numerical evaluation}
+@category{Evaluation flags}
+@closecatbox
+@end defvr
+@anchor{float}
+@deffn {Function} float (@var{expr})
+
+Converts integers, rational numbers and bigfloats in @var{expr} to floating
+point numbers.  It is also an an evaluation flag, @code{float} causes
+non-integral rational numbers and bigfloat numbers to be converted to floating
+point.
+
+@opencatbox{Categories:}
+@category{Numerical evaluation}
+@category{Evaluation flags}
+@closecatbox
+@end deffn
+@anchor{ratnump}
+@deffn {Function} ratnump (@var{expr})
+
+Returns @code{true} if @var{expr} is a literal integer or ratio of literal
+integers, otherwise @code{false}.
+
+@opencatbox{Categories:}
+@category{Predicate functions}
+@category{Rational expressions}
+@closecatbox
+@end deffn
+@anchor{logcontract}
+@deffn {Function} logcontract (@var{expr})
+
+Recursively scans the expression @var{expr}, transforming
+subexpressions of the form @code{a1*log(b1) + a2*log(b2) + c} into
+@code{log(ratsimp(b1^a1 * b2^a2)) + c}
+
+@c ===beg===
+@c 2*(a*log(x) + 2*a*log(y))$
+@c logcontract(%);
+@c ===end===
+@example maxima
+(%i1) 2*(a*log(x) + 2*a*log(y))$
+@group
+(%i2) logcontract(%);
+                                 2  4
+(%o2)                     a log(x  y )
+@end group
+@end example
+
+The declaration @code{declare(n,integer)} causes
+@code{logcontract(2*a*n*log(x))} to simplify to @code{a*log(x^(2*n))}.  The
+coefficients that "contract" in this manner are those such as the 2 and the
+@code{n} here which satisfy @code{featurep(coeff,integer)}.  The user can
+control which coefficients are contracted by setting the option
+@code{logconcoeffp} to the name of a predicate function of one argument.
+E.g. if you like to generate SQRTs, you can do @code{logconcoeffp:'logconfun$
+logconfun(m):=featurep(m,integer) or ratnump(m)$} .  Then
+@code{logcontract(1/2*log(x));} will give @code{log(sqrt(x))}.
+
+@opencatbox{Categories:}
+@category{Exponential and logarithm functions}
+@closecatbox
+@end deffn
+@anchor{log}
+@deffn {Function} log (@var{x})
+
+Represents the natural (base @math{e}) logarithm of @var{x}.
+
+Maxima does not have a built-in function for the base 10 logarithm or other 
+bases. @code{log10(x) := log(x) / log(10)} is a useful definition.
+
+Simplification and evaluation of logarithms is governed by several global flags:
+
+@table @code
+@item @code{logexpand}
+causes @code{log(a^b)} to become @code{b*log(a)}. If it is 
+set to @code{all}, @code{log(a*b)} will also simplify to @code{log(a)+log(b)}.
+If it is set to @code{super}, then @code{log(a/b)} will also simplify to 
+@code{log(a)-log(b)} for rational numbers @code{a/b}, @code{a#1}. 
+(@code{log(1/b)}, for @code{b} integer, always simplifies.) If it is set to 
+@code{false}, all of these simplifications will be turned off.
+
+@item @code{logsimp}
+if @code{false} then no simplification of @code{%e} to a power containing 
+@code{log}'s is done.
+
+@item @code{lognegint}
+if @code{true} implements the rule @code{log(-n) -> log(n)+%i*%pi} for
+@code{n} a positive integer.
+
+@item @code{%e_to_numlog}
+when @code{true}, @code{r} some rational number, and @code{x} some expression,
+the expression @code{%e^(r*log(x))} will be simplified into @code{x^r}.  It
+should be noted that the @code{radcan} command also does this transformation,
+and more complicated transformations of this as well. The @code{logcontract} 
+command "contracts" expressions containing @code{log}.
+@end table
+
+@opencatbox{Categories:}
+@category{Exponential and logarithm functions}
+@closecatbox
+@end deffn
+@anchor{hstep}
+@deffn {Function} hstep (@var{x})
+The Heaviside unit step function, equal to 0 if @var{x} is negative,
+equal to 1 if @var{x} is positive and equal to 1/2 if @var{x} is equal
+to zero.
+
+If you want a unit step function that takes on the value of 0 at @var{x}
+equal to zero, use @mrefdot{unit_step}
+
+@opencatbox{Categories:}
+@category{Laplace transform}
+@category{Mathematical functions}
+@closecatbox
+
+@end deffn
+@anchor{factlim}
+@defvr {Option variable} factlim
+Default value: 100000
+
+@code{factlim} specifies the highest factorial which is
+automatically expanded.  If it is -1 then all integers are expanded.
+
+@opencatbox{Categories:}
+@category{Gamma and factorial functions}
+@closecatbox
+@end defvr
+@anchor{trigsign}
+@defvr {Option variable} trigsign
+Default value: @code{true}
+
+When @code{trigsign} is @code{true}, it permits simplification of negative
+arguments to trigonometric functions.  E.g., 
+@html
+@math{\sin(-x)}
+@end html
+@ifinfo
+@math{@code{sin(-x)}}
+@end ifinfo
+@iftex
+@math{\sin(-x)}
+@end iftex 
+will
+become 
+@html
+@math{-\sin x}
+@end html
+@ifinfo
+@math{@code{-sin(x)}}
+@end ifinfo
+@iftex
+@math{-\sin x}
+@end iftex
+only if @code{trigsign} is @code{true}.
+
+@opencatbox{Categories:}
+@category{Trigonometric functions}
+@category{Simplification flags and variables}
+@closecatbox
+@end defvr
+@anchor{%iargs}
+@defvr {Option variable} %iargs
+Default value: @code{true}
+
+When @code{%iargs} is @code{true},
+trigonometric functions are simplified to hyperbolic functions
+when the argument is apparently a multiple of the imaginary
+unit 
+@html
+@math{i.}
+@end html
+@ifinfo
+@math{%i.}
+@end ifinfo
+@iftex
+@math{i.}
+@end iftex
+@c @iftex
+@c when the argument is apparently a multiple of the imaginary unit @math{i}.
+@c @end iftex
+@c @ifnottex
+@c when the argument is apparently a multiple of the imaginary unit @math{%i}.
+@c @end ifnottex
+
+Even when the argument is demonstrably real, the simplification is applied;
+Maxima considers only whether the argument is a literal multiple
+of 
+@html
+@math{i.}
+@end html
+@ifinfo
+@math{%i.}
+@end ifinfo
+@iftex
+@math{i.}
+@end iftex
+@c @iftex
+@c Maxima considers only whether the argument is a literal multiple of @math{i}.
+@c @end iftex
+@c @ifnottex
+@c Maxima considers only whether the argument is a literal multiple of @math{%i}.
+@c @end ifnottex
+
+Examples:
+
+@c ===beg===
+@c %iargs : false$
+@c [sin (%i * x), cos (%i * x), tan (%i * x)];
+@c %iargs : true$
+@c [sin (%i * x), cos (%i * x), tan (%i * x)];
+@c ===end===
+@example maxima
+(%i1) %iargs : false$
+@group
+(%i2) [sin (%i * x), cos (%i * x), tan (%i * x)];
+(%o2)           [sin(%i x), cos(%i x), tan(%i x)]
+@end group
+(%i3) %iargs : true$
+@group
+(%i4) [sin (%i * x), cos (%i * x), tan (%i * x)];
+(%o4)           [%i sinh(x), cosh(x), %i tanh(x)]
+@end group
+@end example
+
+Even when the argument is demonstrably real, the simplification is applied.
+
+@c ===beg===
+@c declare (x, imaginary)$
+@c [featurep (x, imaginary), featurep (x, real)];
+@c sin (%i * x);
+@c ===end===
+@example maxima
+(%i1) declare (x, imaginary)$
+@group
+(%i2) [featurep (x, imaginary), featurep (x, real)];
+(%o2)                     [true, false]
+@end group
+@group
+(%i3) sin (%i * x);
+(%o3)                      %i sinh(x)
+@end group
+@end example
+
+@opencatbox{Categories:}
+@category{Trigonometric functions}
+@category{Hyperbolic functions}
+@category{Simplification flags and variables}
+@closecatbox
+@end defvr
+@anchor{%piargs}
+@defvr {Option variable} %piargs
+Default value: @code{true}
+
+When @code{%piargs} is @code{true},
+trigonometric functions are simplified to algebraic constants
+when the argument is an integer multiple
+of
+@html
+@math{\pi,}
+@end html
+@ifinfo
+@math{%pi,}
+@end ifinfo
+@iftex
+@math{\pi,}
+@end iftex
+@html
+@math{\pi/2,}
+@end html
+@ifinfo
+@math{%pi/2,}
+@end ifinfo
+@iftex
+@math{\pi/2,}
+@end iftex
+@html
+@math{\pi/4,}
+@end html
+@ifinfo
+@math{%pi/4,}
+@end ifinfo
+@iftex
+@math{\pi/4,}
+@end iftex
+or
+@html
+@math{\pi/6.}
+@end html
+@ifinfo
+@math{%pi/6.}
+@end ifinfo
+@iftex
+@math{\pi/6.}
+@end iftex
+@c @iftex
+@c @math{\pi}, @math{\pi/2}, @math{\pi/3}, @math{\pi/4}, or @math{\pi/6}.
+@c @end iftex
+@c @ifnottex
+@c @math{%pi}, @math{%pi/2}, @math{%pi/3}, @math{%pi/4}, or @math{%pi/6}.
+@c @end ifnottex
+
+Maxima knows some identities which can be applied when
+@html
+@math{\pi,}
+@end html
+@ifinfo
+@math{%pi,}
+@end ifinfo
+@iftex
+@math{\pi,}
+@end iftex
+etc.,
+@c @iftex
+@c Maxima knows some identities which can be applied when @math{\pi}, etc.,
+@c @end iftex
+@c @ifnottex
+@c Maxima knows some identities which can be applied when @math{%pi}, etc.,
+@c @end ifnottex
+are multiplied by an integer variable (that is, a symbol declared to be
+integer).
+
+Examples:
+
+@c ===beg===
+@c %piargs : false$
+@c [sin (%pi), sin (%pi/2), sin (%pi/3)];
+@c [sin (%pi/4), sin (%pi/5), sin (%pi/6)];
+@c %piargs : true$
+@c [sin (%pi), sin (%pi/2), sin (%pi/3)];
+@c [sin (%pi/4), sin (%pi/5), sin (%pi/6)];
+@c [cos (%pi/3), cos (10*%pi/3), tan (10*%pi/3),
+@c        cos (sqrt(2)*%pi/3)];
+@c ===end===
+@example maxima
+(%i1) %piargs : false$
+@group
+(%i2) [sin (%pi), sin (%pi/2), sin (%pi/3)];
+                                %pi       %pi
+(%o2)            [sin(%pi), sin(---), sin(---)]
+                                 2         3
+@end group
+@group
+(%i3) [sin (%pi/4), sin (%pi/5), sin (%pi/6)];
+                      %pi       %pi       %pi
+(%o3)            [sin(---), sin(---), sin(---)]
+                       4         5         6
+@end group
+(%i4) %piargs : true$
+@group
+(%i5) [sin (%pi), sin (%pi/2), sin (%pi/3)];
+                                sqrt(3)
+(%o5)                    [0, 1, -------]
+                                   2
+@end group
+@group
+(%i6) [sin (%pi/4), sin (%pi/5), sin (%pi/6)];
+                         1         %pi   1
+(%o6)                [-------, sin(---), -]
+                      sqrt(2)       5    2
+@end group
+@group
+(%i7) [cos (%pi/3), cos (10*%pi/3), tan (10*%pi/3),
+       cos (sqrt(2)*%pi/3)];
+                1    1               sqrt(2) %pi
+(%o7)          [-, - -, sqrt(3), cos(-----------)]
+                2    2                    3
+@end group
+@end example
+
+Some identities are applied when 
+@html
+@math{\pi}
+@end html
+@ifinfo
+@math{%pi}
+@end ifinfo
+@iftex
+@math{\pi}
+@end iftex
+and 
+@html
+@math{\pi/2}
+@end html
+@ifinfo
+@math{%pi/2}
+@end ifinfo
+@iftex
+@math{\pi/2}
+@end iftex
+are
+multiplied by an integer variable.
+@c @iftex
+@c Some identities are applied when @math{\pi} and @math{\pi/2} are multiplied by
+@c an integer variable.
+@c @end iftex
+@c @ifnottex
+@c Some identities are applied when @math{%pi} and @math{%pi/2} are multiplied by
+@c an integer variable.
+@c @end ifnottex
+
+@c ===beg===
+@c declare (n, integer, m, even)$
+@c [sin (%pi * n), cos (%pi * m), sin (%pi/2 * m),
+@c        cos (%pi/2 * m)];
+@c ===end===
+@example maxima
+(%i1) declare (n, integer, m, even)$
+@group
+(%i2) [sin (%pi * n), cos (%pi * m), sin (%pi/2 * m),
+       cos (%pi/2 * m)];
+                                      m/2
+(%o2)                  [0, 1, 0, (- 1)   ]
+@end group
+@end example
+
+@opencatbox{Categories:}
+@category{Trigonometric functions}
+@category{Simplification flags and variables}
+@closecatbox
+@end defvr
+@anchor{nouns}
+@defvr {Special symbol} nouns
+
+@code{nouns} is an an evaluation flag.  When used as an option to the @code{ev}@w{}
+command, @code{nouns} converts all "noun" forms occurring in the expression
+being @code{ev}'d to "verbs", i.e., evaluates them.  See also
+@mrefcomma{noun} @mrefcomma{nounify} @code{verb}, and @mrefdot{verbify}
+
+@opencatbox{Categories:}
+@category{Evaluation flags}
+@category{Nouns and verbs}
+@closecatbox
+@end defvr
+@anchor{noun}
+@defvr {Property} noun
+
+@code{noun} is one of the options of the @code{declare} command.  It makes a
+function so declared a "noun", meaning that it won't be evaluated
+automatically.
+
+Example:
+
+@c ===beg===
+@c factor (12345678);
+@c declare (factor, noun);
+@c factor (12345678);
+@c ''%, nouns;
+@c ===end===
+@example maxima
+@group
+(%i1) factor (12345678);
+                             2
+(%o1)                     2 3  47 14593
+@end group
+@group
+(%i2) declare (factor, noun);
+(%o2)                         done
+@end group
+@group
+(%i3) factor (12345678);
+(%o3)                   factor(12345678)
+@end group
+@group
+(%i4) ''%, nouns;
+                             2
+(%o4)                     2 3  47 14593
+@end group
+@end example
+
+@opencatbox{Categories:}
+@category{Nouns and verbs}
+@closecatbox
+@end defvr
+@table @code
+@anchor{nary}
+@item @mref{nary}
+Tells Maxima to recognize @var{a_i} as an n-ary function.
+
+The @code{nary} declaration is not the same as calling the @code{nary}
+function.  The sole effect of @code{declare(foo, nary)} is to instruct the
+Maxima simplifier to flatten nested expressions, for example, to simplify
+@code{foo(x, foo(y, z))} to @code{foo(x, y, z)}.
+@end table
+@anchor{properties}
+@deffn {Function} properties (@var{a})
+
+Returns a list of the names of all the properties associated with the atom
+@var{a}.
+
+@opencatbox{Categories:}
+@category{Declarations and inferences}
+@closecatbox
+@end deffn
+@anchor{drawdf}
+@deffn {Function} drawdf @
+@fname{drawdf} (@var{dydx}, ...options and objects...) @
+@fname{drawdf} (@var{dvdu}, [@var{u},@var{v}], ...options and objects...) @
+@fname{drawdf} (@var{dvdu}, [@var{u},@var{umin},@var{umax}], [@var{v},@var{vmin},@var{vmax}], ...options and objects...) @
+@fname{drawdf} ([@var{dxdt},@var{dydt}], ...options and objects...) @
+@fname{drawdf} ([@var{dudt},@var{dvdt}], [@var{u},@var{v}], ...options and objects...) @
+@fname{drawdf} ([@var{dudt},@var{dvdt}], [@var{u},@var{umin},@var{umax}], [@var{v},@var{vmin},@var{vmax}], ...options and objects...)
+
+Function @code{drawdf} draws a 2D direction field with optional
+solution curves and other graphics using the @code{draw} package.
+
+The first argument specifies the derivative(s), and must be either an
+expression or a list of two expressions.  @var{dydx}, @var{dxdt} and
+@var{dydt} are expressions that depend on @var{x} and @var{y}.
+@var{dvdu}, @var{dudt} and @var{dvdt} are expressions that depend on
+@var{u} and @var{v}.
+
+If the independent and dependent variables are not @var{x} and
+@var{y}, then their names must be specified immediately following the
+derivative(s), either as a list of two names
+@code{[}@var{u},@var{v}@code{]}, or as two lists of the form
+@code{[}@var{u},@var{umin},@var{umax}@code{]} and
+@code{[}@var{v},@var{vmin},@var{vmax}@code{]}.
+
+The remaining arguments are @i{graphic options}, @i{graphic objects},
+or lists containing graphic options and objects, nested to arbitrary
+depth.  The set of graphic options and objects supported by
+@code{drawdf} is a superset of those supported by @code{draw2d} and
+@code{gr2d} from the @code{draw} package.
+
+The arguments are interpreted sequentially: @i{graphic options} affect
+all following @i{graphic objects}.  Furthermore, @i{graphic objects}
+are drawn on the canvas in order specified, and may obscure graphics
+drawn earlier.  Some @i{graphic options} affect the global appearance
+of the scene.
+
+The additional @i{graphic objects} supported by @code{drawdf} include:
+@code{solns_at}, @code{points_at}, @code{saddles_at}, @code{soln_at},
+@code{point_at}, and @code{saddle_at}.
+
+The additional @i{graphic options} supported by @code{drawdf} include:
+@code{field_degree}, @code{soln_arrows}, @code{field_arrows},
+@code{field_grid}, @code{field_color}, @code{show_field},
+@code{tstep}, @code{nsteps}, @code{duration}, @code{direction},
+@code{field_tstep}, @code{field_nsteps}, and @code{field_duration}.
+
+Commonly used @i{graphic objects} inherited from the @code{draw}
+package include: @code{explicit}, @code{implicit}, @code{parametric},
+@code{polygon}, @code{points}, @code{vector}, @code{label}, and all
+others supported by @code{draw2d} and @code{gr2d}.
+
+Commonly used @i{graphic options} inherited from the @code{draw}
+package include:@*
+@code{points_joined}, @code{color},
+@code{point_type}, @code{point_size}, @code{line_width},
+@code{line_type}, @code{key}, @code{title}, @code{xlabel},
+@code{ylabel}, @code{user_preamble}, @code{terminal},
+@code{dimensions}, @code{file_name}, and all
+others supported by @code{draw2d} and @code{gr2d}.
+
+See also @mrefcomma{draw2d} @mrefcomma{rk} @mref{desolve} and 
+@mrefdot{ode2}
+
+Users of wxMaxima or Imaxima may optionally use @code{wxdrawdf}, which
+is identical to @code{drawdf} except that the graphics are drawn
+within the notebook using @code{wxdraw}.
+
+To make use of this function, write first @code{load("drawdf")}.
+
+Examples:
+
+@example
+(%i1) load("drawdf")$
+(%i2) drawdf(exp(-x)+y)$        /* default vars: x,y */
+(%i3) drawdf(exp(-t)+y, [t,y])$ /* default range: [-10,10] */
+(%i4) drawdf([y,-9*sin(x)-y/5], [x,1,5], [y,-2,2])$
+@end example
+
+For backward compatibility, @code{drawdf} accepts
+most of the parameters supported by plotdf.
+
+@example
+(%i5) drawdf(2*cos(t)-1+y, [t,y], [t,-5,10], [y,-4,9],
+             [trajectory_at,0,0])$
+@end example
+
+@code{soln_at} and @code{solns_at} draw solution curves
+passing through the specified points, using a slightly
+enhanced 4th-order Runge Kutta numerical integrator.
+
+@example
+(%i6) drawdf(2*cos(t)-1+y, [t,-5,10], [y,-4,9],
+             solns_at([0,0.1],[0,-0.1]),
+             color=blue, soln_at(0,0))$
+@end example
+
+@code{field_degree=2} causes the field to be composed of quadratic
+splines, based on the first and second derivatives at each grid point.
+@code{field_grid=[}@var{COLS},@var{ROWS}@code{]} specifies the number
+of columns and rows in the grid.
+
+@example
+(%i7) drawdf(2*cos(t)-1+y, [t,-5,10], [y,-4,9],
+             field_degree=2, field_grid=[20,15],
+             solns_at([0,0.1],[0,-0.1]),
+             color=blue, soln_at(0,0))$
+@end example
+
+@code{soln_arrows=true} adds arrows to the solution curves, and (by
+default) removes them from the direction field.  It also changes the
+default colors to emphasize the solution curves.
+
+@example
+(%i8) drawdf(2*cos(t)-1+y, [t,-5,10], [y,-4,9],
+             soln_arrows=true,
+             solns_at([0,0.1],[0,-0.1],[0,0]))$
+@end example
+
+@code{duration=40} specifies the time duration of numerical
+integration (default 10).  Integration will also stop automatically if
+the solution moves too far away from the plotted region, or if the
+derivative becomes complex or infinite.  Here we also specify
+@code{field_degree=2} to plot quadratic splines.  The equations below
+model a predator-prey system.
+
+@example
+(%i9) drawdf([x*(1-x-y), y*(3/4-y-x/2)], [x,0,1.1], [y,0,1],
+             field_degree=2, duration=40,
+             soln_arrows=true, point_at(1/2,1/2),
+             solns_at([0.1,0.2], [0.2,0.1], [1,0.8], [0.8,1],
+                      [0.1,0.1], [0.6,0.05], [0.05,0.4],
+                      [1,0.01], [0.01,0.75]))$
+@end example
+
+@code{field_degree='solns} causes the field to be composed
+of many small solution curves computed by 4th-order
+Runge Kutta, with better results in this case.
+
+@example
+(%i10) drawdf([x*(1-x-y), y*(3/4-y-x/2)], [x,0,1.1], [y,0,1],
+              field_degree='solns, duration=40,
+              soln_arrows=true, point_at(1/2,1/2),
+              solns_at([0.1,0.2], [0.2,0.1], [1,0.8],
+                       [0.8,1], [0.1,0.1], [0.6,0.05],
+                       [0.05,0.4], [1,0.01], [0.01,0.75]))$
+@end example
+
+@code{saddles_at} attempts to automatically linearize the equation at
+each saddle, and to plot a numerical solution corresponding to each
+eigenvector, including the separatrices.  @code{tstep=0.05} specifies
+the maximum time step for the numerical integrator (the default is
+0.1).  Note that smaller time steps will sometimes be used in order to
+keep the x and y steps small.  The equations below model a damped
+pendulum.
+
+@example
+(%i11) drawdf([y,-9*sin(x)-y/5], tstep=0.05,
+              soln_arrows=true, point_size=0.5,
+              points_at([0,0], [2*%pi,0], [-2*%pi,0]),
+              field_degree='solns,
+              saddles_at([%pi,0], [-%pi,0]))$
+@end example
+
+@code{show_field=false} suppresses the field entirely.
+
+@example
+(%i12) drawdf([y,-9*sin(x)-y/5], tstep=0.05,
+              show_field=false, soln_arrows=true,
+              point_size=0.5,
+              points_at([0,0], [2*%pi,0], [-2*%pi,0]),
+              saddles_at([3*%pi,0], [-3*%pi,0],
+                         [%pi,0], [-%pi,0]))$
+@end example
+
+@code{drawdf} passes all unrecognized parameters to @code{draw2d} or
+@code{gr2d}, allowing you to combine the full power of the @code{draw}
+package with @code{drawdf}.
+
+@example
+(%i13) drawdf(x^2+y^2, [x,-2,2], [y,-2,2], field_color=gray,
+              key="soln 1", color=black, soln_at(0,0),
+              key="soln 2", color=red, soln_at(0,1),
+              key="isocline", color=green, line_width=2,
+              nticks=100, parametric(cos(t),sin(t),t,0,2*%pi))$
+@end example
+
+@code{drawdf} accepts nested lists of graphic options and objects,
+allowing convenient use of makelist and other function calls to
+generate graphics.
+
+@example
+(%i14) colors : ['red,'blue,'purple,'orange,'green]$
+(%i15) drawdf([x-x*y/2, (x*y - 3*y)/4],
+              [x,2.5,3.5], [y,1.5,2.5],
+              field_color = gray,
+              makelist([ key   = concat("soln",k),
+                         color = colors[k],
+                         soln_at(3, 2 + k/20) ],
+                       k,1,5))$
+@end example
+
+@opencatbox{Categories:}
+@category{Package drawdf}
+@closecatbox
+
+@end deffn

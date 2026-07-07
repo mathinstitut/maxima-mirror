@@ -18,6 +18,7 @@
 @c FOLLOWING @NODES SHOULD BE CHANGED TO @DEFFN
 @c SINCE NARY, NOFIX, POSTFIX, AND PREFIX ARE ALL MAXIMA FUNCTIONS
 
+@anchor{function_nary}
 @node N-арные операторы (nary), Безфиксные операторы (nofix), Операторы, Операторы
 @section N-арные операторы (nary)
 N-арный @code{nary} оператор используется для того, чтобы задать функцию любого числа аргументов, каждый из которых разделен 

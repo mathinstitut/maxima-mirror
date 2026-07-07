@@ -2295,3 +2295,120 @@ tr_function_call_default, tr_array_as_ref,tr_numer]
 
 @end deffn
 
+
+@c Not yet translated into Russian; English original included as-is.
+@anchor{memoizing function}
+@anchor{memoizing functions}
+@anchor{Memoizing function}
+@anchor{Memoizing functions}
+@c -----------------------------------------------------------------------------
+@subsection Memoizing Functions
+@c -----------------------------------------------------------------------------
+
+A @i{memoizing function} caches the result the first time it is called with a
+given argument, and returns the stored value, without recomputing it, when that
+same argument is given.  Memoizing functions are often called
+@i{array function} and are in fact handled like arrays in many ways:
+
+The names of memoizing functions are appended to the global list @code{arrays}
+(not the global list @code{functions}).  @code{arrayinfo} returns the list of
+arguments for which there are stored values, and @code{listarray} returns the
+stored values.  @code{dispfun} and @code{fundef} return the array function
+definition.
+
+@code{arraymake} constructs an array function call,
+analogous to @code{funmake} for ordinary functions.
+@code{arrayapply} applies an array function to its arguments,
+analogous to @code{apply} for ordinary functions.
+There is nothing exactly analogous to @code{map} for array functions,
+although @code{map(lambda([@var{x}], @var{a}[@var{x}]), @var{L})} or
+@code{makelist(@var{a}[@var{x}], @var{x}, @var{L})}, where @var{L} is a list,
+are not too far off the mark.
+
+@code{remarray} removes an array function definition (including any stored
+function values), analogous to @code{remfunction} for ordinary functions.
+
+@code{kill(@var{a}[@var{x}])} removes the value of the array function @var{a}
+stored for the argument @var{x};
+the next time @var{a} is called with argument @var{x},
+the function value is recomputed.
+However, there is no way to remove all of the stored values at once,
+except for @code{kill(@var{a})} or @code{remarray(@var{a})},
+which also remove the function definition.
+
+
+Examples
+
+If evaluating the function needs much time and only a limited number of points
+is ever evaluated (which means not much time is spent looking up results in a
+long list of cached results) Memoizing functions can speed up calculations
+considerably.
+@c ===beg===
+@c showtime:true$
+@c a[x]:=float(sum(sin(x*t),t,1,10000));
+@c a[1];
+@c a[1];
+@c ===end===
+@example maxima
+@group
+(%i1) showtime:true$
+Evaluation took 0.0000 seconds (0.0000 elapsed) using 32 bytes.
+@end group
+@group
+(%i2) a[x]:=float(sum(sin(x*t),t,1,10000));
+Evaluation took 0.0000 seconds (0.0000 elapsed) using 288 bytes.
+(%o2)        a  := float(sum(sin(x t), t, 1, 10000))
+              x
+@end group
+@group
+(%i3) a[1];
+Evaluation took 4.6100 seconds (4.6300 elapsed) using 455.060 MB.
+(%o3)                  1.6338910217924467
+@end group
+@group
+(%i4) a[1];
+Evaluation took 0.0000 seconds (0.0000 elapsed) using 24 bytes.
+(%o4)                  1.6338910217924467
+@end group
+@end example
+
+As the memoizing function is only evaluated once for each input value
+changes in variables the memoizing function uses are not considered
+for values that are already cached:
+@c ===beg===
+@c a[x]:=b*x;
+@c b:1;
+@c a[2];
+@c b:2;
+@c a[1];
+@c a[2];
+@c ===end===
+@example maxima
+@group
+(%i1) a[x]:=b*x;
+(%o1)                       a  := b x
+                             x
+@end group
+@group
+(%i2) b:1;
+(%o2)                           1
+@end group
+@group
+(%i3) a[2];
+(%o3)                           2
+@end group
+@group
+(%i4) b:2;
+(%o4)                           2
+@end group
+@group
+(%i5) a[1];
+(%o5)                           2
+@end group
+@group
+(%i6) a[2];
+(%o6)                           2
+@end group
+@end example
+
+@c -----------------------------------------------------------------------------

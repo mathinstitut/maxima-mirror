@@ -37,6 +37,7 @@
 @closecatbox
 @end defvr
 
+@anchor{false}
 @defvr {Константа} false
 @code{false} -- логическая константа "ложь".
 В Maxima @code{false} представляется значением @code{NIL} в Lisp.
@@ -197,6 +198,7 @@
 @closecatbox
 @end defvr
 
+@anchor{true}
 @defvr {Константа} true
 @code{true} -- логическая константа "истина".
 В Maxima @code{true} представляется значением @code{T} в Lisp.
@@ -227,5 +229,42 @@
 
 @opencatbox{Категории:}
 @category{Константы}
+@closecatbox
+@end defvr
+
+@c -----------------------------------------------------------------------------
+@c Not yet translated into Russian; English original included as-is.
+@anchor{%gamma}
+@vrindex Euler-Mascheroni constant
+@defvr {Constant} %gamma
+
+The Euler-Mascheroni constant, 0.5772156649015329.... It is defined by (@urlaands{eqn 6.1.3, 255} and @urldlmf{5.2.ii})
+@html
+@displaymath
+\gamma = \lim_{n \rightarrow \infty} \left(\sum_{k=1}^n {1\over k} - \log n\right)
+@end displaymath
+@end html
+@ifinfo
+
+@example
+                                   n
+                                  ====
+                                  \     1
+               %gamma = limit    ( >    - - log(n))
+                        n -> inf  /     k
+                                  ====
+                                  k = 1
+@end example
+
+@end ifinfo
+@tex
+$$\gamma = \lim_{n \rightarrow \infty} \left(\sum_{k=1}^n {1\over k} - \log n\right)$$
+@end tex
+
+
+@c DOUBTLESS THERE IS MORE TO SAY HERE.
+
+@opencatbox{Categories:}
+@category{Constants}
 @closecatbox
 @end defvr

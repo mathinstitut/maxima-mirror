@@ -526,8 +526,9 @@ h^n \in I \}$.@*
 
 @end deffn
 
+@anchor{poly_reduced_grobner}
 @deffn {Функция} poly_reduced_grobner (@var{polylist}, @var{varlist})
-Возвращает приведенный базис Гребнера идеала, порожденного многочленами @var{polylist}. 
+Возвращает приведенный базис Гребнера идеала, порожденного многочленами @var{polylist}.
 Зависит от глобальных флагов.
 
 @opencatbox{Категории:}
