@@ -132,6 +132,9 @@ Bug fixes for unnumbered bugs:
 -----------------------------
 * rtest_gruntz test #38
 * mkdir ignoring drive letter on SBCL/Windows
+* package descriptive: in 'histogram', correct bar height calculation for frequency = density
+* maxima-discuss 2026-06-01: "Solving Equation with Ezunits Problem"
+* maxima-discuss 2026-04-02: "Recent changes to "box" has broken plot options"
 
 Changes in the Windows installer:
 ---------------------------------
@@ -145,3 +148,16 @@ Changes in the Windows installer:
 Other changes:
 --------------
  * Linux/Mac: If the default maxima isn't found choose an installed flavour of the same version
+ * new function 'at_difference' to represent difference of "at" expressions
+ * new function 'ranks' to compute rank of each item in a list
+ * new function 'ordering' to construct an ordering permutation of a list
+ * new function 'accumulate' to construct generalized running total of a list
+ * new function 'has_key' to return whether an undeclared array or hash table contains a given key
+ * extend "for" loop syntax to handle destructuring assignment to loop variables
+ * extend "for" loop to iterate over undeclared arrays and hash tables
+ * merge double_factorial function with operator "!!"
+ * compute k!! for negative odd integer k via identity
+ * workaround for SBCL bug https://bugs.launchpad.net/sbcl/+bug/2138812 (print base for loading files)
+ * package ezunits: additional examples thanks to M. Mroz
+ * package ezunits: new function all_units_fundamental to convert all units in an expression to fundamental units
+
