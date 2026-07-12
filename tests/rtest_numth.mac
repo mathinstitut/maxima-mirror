@@ -814,3 +814,9 @@ gcfactor (%i / 2);
 sublist(create_list([r, i], r, makelist(r, r, -4, 4), i, makelist(i, i, -4, 4)),
         lambda([ri], ri[1] + %i * ri[2] # expand(gcfactor(ri[1] + %i * ri[2]))));
 [];
+
+
+/* Bug #4765: "gfactor not idempotent" */
+
+[gfactor((%i+1)^(-1/2)), gfactor(gfactor((%i+1)^(-1/2)))];
+[-((%i-1)*sqrt(%i+1)/2), -((%i-1)*sqrt(%i+1)/2)];
