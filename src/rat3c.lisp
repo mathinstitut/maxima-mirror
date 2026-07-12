@@ -112,11 +112,7 @@
 	       (t (setq a (linhack y x a (cadr c) cofac?))
 		  (if (cdr a) (rplacd a (nreverse (cdr a))))
 		  a)))
-	((eq $gcd '$spmod)
-	 (if (or (palgp x) (palgp y))
-       ;; ZGCD doesn't support algebraic variables - switch to OLDGCD.
-	   (let (($gcd '$subres)) (list (oldgcd x y)))
-       (list (zgcd x y))))
+	((eq $gcd '$spmod) (list (zgcd x y)))
 	((eq $gcd '$subres) (list (oldgcd x y)))
 	((eq $gcd '$algebraic)
 	 (if (or (palgp x) (palgp y))
