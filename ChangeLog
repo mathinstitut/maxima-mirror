@@ -25,7 +25,6 @@ Bug fixes for numbered bugs:
  * \#4085 limit((2-%i)^a/a!,a,inf);
  * \#4075 factor(...,p^2) => internal error
  * \#4142 integrate(1/(x^4-%i),x) gives sign error
- * \#4169 spmod bug when algebraic is true
  * \#4236 Repeated run_testsuite leads to out of memory error
  * \#4250 Unsimplified solution to cubic
  * \#4282 integrate((1-cos(x))^(3/2), x, 0, 2*%pi) wrong by factor of 2, correct in earlier version

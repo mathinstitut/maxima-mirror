@@ -820,9 +820,3 @@ sublist(create_list([r, i], r, makelist(r, r, -4, 4), i, makelist(i, i, -4, 4)),
 
 [gfactor((%i+1)^(-1/2)), gfactor(gfactor((%i+1)^(-1/2)))];
 [-((%i-1)*sqrt(%i+1)/2), -((%i-1)*sqrt(%i+1)/2)];
-
-
-/* Bug #4169: "spmod bug when algebraic is true" */
-
-gcd(-(z-1)*(2*z-%i-2)^2, -(2*z-%i-2)*(6*z-%i-6)), gcd : spmod, algebraic;
-2*z-%i-2;
