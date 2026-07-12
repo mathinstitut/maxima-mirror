@@ -225,6 +225,13 @@ add_subdirectory("tcltk/")
 
 add_subdirectory("texinfo/")
 
+# the MSWEBVIEW version is needed for the subdirectory mswebview and wxwidgets - set it here.
+
+set(MSWEBVIEWVERSION "1.0.4078.44")
+set(MSWEBVIEW_MD5 "f6e097a767ff6840d55049876ba2dee1")
+
+add_subdirectory("mswebview/")
+
 add_subdirectory("wxwidgets/")
 
 add_subdirectory("wxmaxima/")
