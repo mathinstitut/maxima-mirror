@@ -773,8 +773,9 @@
       (putonvlist x)))
 
 (defun fr1 (x varlist)		    ;put radicands on initial varlist?
-  (if (or (symbolp x) (and (integerp x) (not modulus)))
-   x ; early exit for symbols and integers (when no modulus is set)
+  (if (or (and (symbolp x) (not $algebraic) (not $ratwtlvl))
+          (and (integerp x) (not modulus)))
+   x ; early exit for symbols and integers
    (prog (genvar $norepeat *ratsimp* radlist vlist nvarlist ovarlist genpairs)
      (newvar1 x)
      (setq nvarlist (mapcar #'fr-args vlist))
