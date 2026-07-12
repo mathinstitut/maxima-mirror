@@ -140,6 +140,7 @@ Bug fixes for unnumbered bugs:
 * package descriptive: in 'histogram', correct bar height calculation for frequency = density
 * maxima-discuss 2026-06-01: "Solving Equation with Ezunits Problem"
 * maxima-discuss 2026-04-02: "Recent changes to "box" has broken plot options"
+* nthroot not checking whether its input is a polynomial
 
 Changes in the Windows installer:
 ---------------------------------

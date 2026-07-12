@@ -260,8 +260,11 @@ L = ((A_1 ... A_N) (B_1 ... B_N) (C_1 ... C_N) ...), returns a list
 
 (defmfun $nthroot (p n)
   (if (and (integerp n) (> n 0))
-      (let ((k (pnthrootp (cadr ($rat p)) n)))
+   (let ((r ($rat p)))
+     (if (eql (cddr r) 1)
+      (let ((k (pnthrootp (cadr r) n)))
 	(if k (pdis k) (merror (intl:gettext "nthroot: ~M is not a ~M power") p (format nil "~:r" n))))
+      (merror (intl:gettext "nthroot: ~M is not a polynomial") p)))
     (merror (intl::gettext "nthroot: ~M is not a positive integer") n)))
 
 (defun pnthrootp (p n)
