@@ -167,4 +167,4 @@ Other changes:
  * workaround for SBCL bug https://bugs.launchpad.net/sbcl/+bug/2138812 (print base for loading files)
  * package ezunits: additional examples thanks to M. Mroz
  * package ezunits: new function all_units_fundamental to convert all units in an expression to fundamental units
-
+ * improved tracing of Lisp functions (detect when traced functions have changed)
