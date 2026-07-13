@@ -307,9 +307,9 @@
 	   (solve (car terms) *var mult))
 	 'mtimes)
 
-	((eq (caar *exp) 'mabs)		;; abs(x) = 0  <=>  x = 0
+	((member (caar *exp) '(mabs %signum))		;; abs(x) = 0, signum(x) = 0  <=>  x = 0
 	 (solve (cadr *exp) *var mult)
-	 'mabs)
+	 (caar *exp))
 
 	((eq (caar *exp) 'mexpt)
 	 (cond ((and (freeof *var (cadr *exp))
@@ -857,6 +857,37 @@
 	     ((eq op '%log)
 	      `((mplus) ((mminus) ,(cadr *myvar))
 		((mexpt) $%e ,exp)))
+         ((eq op 'mabs)
+           (let ((exp-sign ($csign exp)))
+             (cond
+               ((eq exp-sign '$zero)
+                 ;; abs(z) = 0 <=> z = 0
+                 (solve (cadr *myvar) *var mult)
+                 (return nil))
+               ((eq exp-sign '$neg)
+                 ;; abs(z) can't be negative; no solution.
+                 (return nil))
+               ((not (member ($csign (cadr *myvar)) '($complex $imaginary)))
+                 ;; abs(real) = EXP <=> real +- EXP = 0.
+                 (solve (add (cadr *myvar) exp) *var mult)
+                 (solve (sub (cadr *myvar) exp) *var mult)
+                 (return nil))
+               (t
+                 (go fail)))))
+         ((eq op '%signum)
+           (cond
+             ((eq ($csign exp) '$zero)
+               ;; signum(z) = 0 <=> z = 0
+               (solve (cadr *myvar) *var mult)
+               (return nil))
+             ((and (not (member ($csign (cadr *myvar)) '($complex $imaginary)))
+                   (not (meqp exp -1))
+                   (not (meqp exp 0))
+                   (not (meqp exp 1)))
+               ;; signum(real) can only be -1, 0, 1; no solution.
+               (return nil))
+             (t
+               (go fail))))
 	     (t (go fail))))
 
      ;; Return NIL (no solutions) if simplification causes an error.

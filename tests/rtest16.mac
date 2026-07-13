@@ -3598,6 +3598,33 @@ sin(%e^x);
 [3.141592653589793, %e^x];
 
 
+/* Solving of equations involving abs and signum */
+
+solve(abs(x) = 0, x);
+[x = 0];
+
+solve(abs(2*x + 3) = 4, x);
+[x = 1/2, x = -7/2];
+
+solve(abs(x) = -1, x);
+[];
+
+solve(abs(x + %i) = 0, x);
+[x = -%i];
+
+solve(abs(x + %i) = 1, x);
+[abs(x + %i) = 1];
+
+solve(signum(x) = 0, x);
+[x = 0];
+
+solve(signum(2*x + 3) = 0, x);
+[x = -3/2];
+
+solve(signum(x) = 2, x);
+[];
+
+
 /* Leave this at the end of the file! */
 contexts;
 [initial, global]$

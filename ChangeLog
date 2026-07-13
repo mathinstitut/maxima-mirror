@@ -168,3 +168,4 @@ Other changes:
  * package ezunits: additional examples thanks to M. Mroz
  * package ezunits: new function all_units_fundamental to convert all units in an expression to fundamental units
  * improved tracing of Lisp functions (detect when traced functions have changed)
+ * basic support for solving equations involving abs and signum
