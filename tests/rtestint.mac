@@ -38,7 +38,7 @@ asin(5*x/abs(x)-12/abs(x))/sqrt(6);
 
 /* Last case */
 integrate(1/x/sqrt(-x^2+x-1),x);
-%i*asinh(x/(sqrt(3)*abs(x))-2/(sqrt(3)*abs(x)));
+-%i*asinh(x/(sqrt(3)*abs(x))-2/(sqrt(3)*abs(x)));
 
 
 /*

@@ -661,7 +661,8 @@
     (when (and (eq signc '$positive)
 	       (eq signdiscrim '$zero))
       ;; c > 0, D = 0
-      (return-from den1 (augmult (mul* (power -1 expr)
+      (return-from den1 (augmult (mul*
+				       (div (ftake 'mabs expr) expr)
 				       (power c -1//2)
 				       `((%log) ,expr)))))
     (when (eq signc '$positive)
@@ -1060,7 +1061,6 @@
   (let ((exp2 (add (mul b x) a a))                ; exp2 = b*x+2*a
         (exp3 (inv (simplify (list '(mabs) x))))) ; exp3 = 1/abs(x)
     (prog (signdiscrim
-	   (condition (add (mul b x) a a))
 	   (signa (checksigntm (simplifya a nil)))
 	   exp1)
        (when (eq signa '$zero)
@@ -1085,7 +1085,8 @@
 	 ;; G&R case del = 0, a > 0
 	 ;;
 	 ;; 1/sqrt(a)*log(x/(2*a+b*x))
-	 (return (mul* (power -1 condition)
+	 (return (mul*
+		       (div (ftake 'mabs exp2) exp2)
 		       -1 exp1
 		       `((%log) ,(augmult (mul exp3 exp2))))))
        (when (eq signa '$positive)
@@ -1116,9 +1117,7 @@
        ;; Why can't we use the case a < 0 in G&R 2.266:
        ;;
        ;; 1/sqrt(-a)*atan((2*a+b*x)/2/sqrt(-a)/sqrt(R)
-       ;;
-       ;; FIXME:  Why the multiplication by -1?
-       (return (mul #+nil -1
+       (return (mul -1
 		    (power -1 1//2)
 		    (den1den1 (mul -1 c) (mul -1 b) (mul -1 a) x ec-1))))))
 
