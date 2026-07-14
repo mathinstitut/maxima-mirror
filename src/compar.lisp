@@ -1787,7 +1787,7 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
     ;; This makes, for example, sign(1/sqrt(x)) = pos & sign(sqrt(x) = pz.
     ((and (eq sign-expt '$neg) ($ratnump expt) ($evenp ($denom expt))
           (member sign-base '($pnz $pos $pz $pn) :test #'eq))
-      (setq sign (if (eq sign-expt '$neg)'$pos '$pz)))
+      (setq sign '$pos))
 	  ((and (member sign-expt '($neg $nz) :test #'eq)
 		(member sign-base '($nz $pz $pnz) :test #'eq))
 	   (setq sign (if (eq sign-base '$pz)
