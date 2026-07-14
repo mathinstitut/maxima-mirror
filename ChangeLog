@@ -142,6 +142,7 @@ Bug fixes for unnumbered bugs:
 * maxima-discuss 2026-04-02: "Recent changes to "box" has broken plot options"
 * nthroot not checking whether its input is a polynomial
 * fr1 early exit incorrect for symbols when $algebraic or $ratwtlvl is set
+* featurep((-1)^n, integer) returning false for n declared integer
 
 Changes in the Windows installer:
 ---------------------------------

@@ -3625,6 +3625,15 @@ solve(signum(x) = 2, x);
 [];
 
 
+/* (-1)^integer is integer */
+
+(declare(n, integer), featurep((-1)^n, integer));
+true;
+
+remove(n, integer);
+done;
+
+
 /* Leave this at the end of the file! */
 contexts;
 [initial, global]$
