@@ -30,6 +30,7 @@ Bug fixes for numbered bugs:
  * \#4236 Repeated run_testsuite leads to out of memory error
  * \#4250 Unsimplified solution to cubic
  * \#4282 integrate((1-cos(x))^(3/2), x, 0, 2*%pi) wrong by factor of 2, correct in earlier version
+ * \#4327 integrate(1/((x+3)*sqrt(x^2-1)),x) gives wrong result
  * \#4338 limit((1+%i)^(2*a)*2^(-a),x,inf) when logexpand is true
  * \#4342 rectform((-1)^(5/6)) is bizarre
  * \#4343 Lisp error for taylor when taylor_logexpand : false

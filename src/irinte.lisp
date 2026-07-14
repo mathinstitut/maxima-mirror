@@ -1097,7 +1097,8 @@
 	 ;; R = c*x^2+b*x+a.
 	 (return (mul* -1 exp1
 		       `((%log)
-			 ,(add b (mul 2 a exp3)
+			 ,(add (mul b x exp3)
+			       (mul 2 a exp3)
 			       (mul 2 exp3
 				    (power a 1//2)
 				    (power (polfoo c b a x) 1//2)))))))

@@ -6434,3 +6434,15 @@ round(10000000 * float(integrate(1 / (x * sqrt(-x^2 + x - 1)), x, 1, 10.38) / %i
 
 round(10000000 * float(integrate(1 / (x * sqrt(-x^2 + x - 1)), x, minf, -1.7096697385732138) / %i - 0.5));
 0;
+
+
+/* Bug #4327: "integrate(1/((x+3)*sqrt(x^2-1)),x) gives wrong result" */
+
+round(10000000 * float(integrate(1 / ((x + 3) * sqrt(x^2 - 1)), x, -5, -4) + 0.1608859238456794));
+0;
+
+round(10000000 * float(integrate(1 / ((x + 3) * sqrt(x^2 - 1)), x, -2, -1) - 0.8104969894767537));
+0;
+
+round(10000000 * expand(float(integrate(1 / ((x + 3) * sqrt(x^2 - 1)), x, 2, 3) - 0.0818821033610074)));
+0;
