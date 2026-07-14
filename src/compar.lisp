@@ -1684,12 +1684,23 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 	     (t t))) ; in Real Mode return T
     ;; Call sign1 and not sign, because sign1 handles constant expressions.
     (sign1 (car l))
-    (cond ((and *complexsign*
-		(or (eq sign '$complex) (eq sign '$imaginary)))
-	   ;; Found a complex or imaginary expression. The sign is $complex.
+    (cond ((and *complexsign* (eq sign '$complex))
+	   ;; Found a complex expression. The sign is $complex.
 	   (setq sign '$complex odds nil evens nil minus nil)
 	   (return t))
-	  ((or (and (eq sign '$zero)
+	  ((and *complexsign* (eq sign '$imaginary))
+        ;; Found an imaginary expression.
+        ;; If the accumulated sign is $zero, it becomes $imaginary.
+        ;; If the accumulated sign is already $imaginary, it remains so.
+        ;; Otherwise, if the accumulated sign is anything but $imaginary,
+        ;; the sign is $complex.
+        (cond
+          ((eq s '$zero)
+            (setq s '$imaginary))
+          ((not (eq s '$imaginary))
+            (setq sign '$complex odds nil evens nil minus nil)
+	        (return t))))
+      ((or (and (eq sign '$zero)
 		    (setq x (sub x (car l))))
 	       (and (eq s sign) (not (eq s '$pn))) ; $PN + $PN = $PNZ
 	       (and (eq s '$pos) (eq sign '$pz))
@@ -1700,9 +1711,15 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 	   (setq s sign))
 	  (t
 	   (cond (*complexsign*
-		  ;; In Complex Mode we have to continue the loop to look further
-		  ;; for a complex or imaginay expression.
-		  (setq s '$pnz))
+          ;; The current term is real and its sign is not $zero.
+          ;; If the accumulated sign is $imaginary, the final sign is $complex.
+          (if (eq s '$imaginary)
+            (progn
+              (setq sign '$complex odds nil evens nil minus nil)
+              (return t))
+            ;; In Complex Mode we have to continue the loop to look further
+		    ;; for a complex or imaginay expression.
+		    (setq s '$pnz)))
 		 (t
 		  ;; In Real mode the loop stops when the sign is 'pnz.
 		  (setq sign '$pnz odds (list x) evens nil minus nil)

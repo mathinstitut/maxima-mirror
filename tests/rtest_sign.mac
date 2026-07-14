@@ -1679,3 +1679,21 @@ imaginary;
 
 forget(kind(f, imaginary));
 [kind(f, imaginary)];
+
+
+/* Bug #4816: "csign(imaginary + imaginary) = complex" */
+
+csign(log(%i) + %i);
+imaginary;
+
+(declare(j, imaginary), csign(a*%i + b*j));
+imaginary;
+
+csign(a*%i + b*j + c*k);
+complex;
+
+(assume(equal(c, 0)), csign(a*%i + b*j + c*k));
+imaginary;
+
+(forget(equal(c, 0)), remove(j, imaginary));
+done;

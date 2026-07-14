@@ -132,6 +132,7 @@ Bug fixes for numbered bugs:
  * \#4800 zeroa, zerob are listed by listofvars
  * \#4806 Taylor: bad singular datum
  * \#4814 Default GCD algorithm can't handle algebraic
+ * \#4816 csign(imaginary + imaginary) = complex
 
 Bug fixes for unnumbered bugs:
 -----------------------------
