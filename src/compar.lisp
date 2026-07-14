@@ -2845,7 +2845,8 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 	  (kind %atanh $increasing) (kind %atanh $oddfun)
 	  (kind $li $complex)
 	  (kind $lambert_w $complex)
-	  (kind %cabs $complex))))
+	  (kind %cabs $real)
+	  (kind %cabs $evenfun))))
 
   ;; Create an initial context for the user which is a subcontext of $global.
   ($newcontext '$initial))
