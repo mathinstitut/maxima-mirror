@@ -207,13 +207,10 @@ else()
     message(FATAL_ERROR "7z not found. It is required for crosscompiling Maxima.")
 endif()
 
-# Avoid warnings in CMake >= 3.24:
-# FIXME: Policy OLD is needed for texinfo, it does not build with the policy NEW
-# But policy OLD is deprecated and may be removed in future CMake versions, see:
-# https://cmake.org/cmake/help/latest/policy/CMP0135.html
-# Hopefully texinfo solves that issue.
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
-    cmake_policy(SET CMP0135 OLD)
+
+# Avoid warning about DOWNLOAD_EXTRACT_TIMESTAMP in CMake >= 3.24:
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
+    cmake_policy(SET CMP0135 NEW)
 endif()
 
 include(ExternalProject)
@@ -222,8 +219,6 @@ include(ExternalProject)
 add_subdirectory("gnuplot/")
 
 add_subdirectory("tcltk/")
-
-add_subdirectory("texinfo/")
 
 # the MSWEBVIEW version is needed for the subdirectory mswebview and wxwidgets - set it here.
 
@@ -308,20 +303,20 @@ configure_file("${CMAKE_SOURCE_DIR}/wine-ecl.sh.tmpl" "${CMAKE_BINARY_DIR}/wine-
 externalproject_add(maxima
   # first copy the maxima source to a build directory, since out-of-source-builds do not work
   DOWNLOAD_COMMAND rsync -a --exclude=crosscompile-windows/build/ "${CMAKE_SOURCE_DIR}/../"  "${CMAKE_BINARY_DIR}/maxima-prefix/src/maxima"
-  DEPENDS  tcl tk texinfo ${CLISP_DEPENDS} ${SBCL_DEPENDS} ${ABCL_DEPENDS} ${CCL64_DEPENDS} ${ECL_DEPENDS}
+  DEPENDS  tcl tk ${CLISP_DEPENDS} ${SBCL_DEPENDS} ${ABCL_DEPENDS} ${CCL64_DEPENDS} ${ECL_DEPENDS}
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND sh -c "test -x ./bootstrap && ./bootstrap || return 0"
-            COMMAND PATH=${CMAKE_BINARY_DIR}/texinfo-installroot/bin:$ENV{PATH} LANG=C ./configure --host=${HOST} ${CLISP_CONFIGURE} ${SBCL_CONFIGURE} ${ABCL_CONFIGURE} ${CCL64_CONFIGURE} ${ECL_CONFIGURE} --with-default-lisp=${WITH_DEFAULT_LISP} --prefix=${WINDOWS_DRIVELETTER}:/maxima-${MAXIMAVERSION}
+            COMMAND LANG=C ./configure --host=${HOST} ${CLISP_CONFIGURE} ${SBCL_CONFIGURE} ${ABCL_CONFIGURE} ${CCL64_CONFIGURE} ${ECL_CONFIGURE} --with-default-lisp=${WITH_DEFAULT_LISP} --prefix=${WINDOWS_DRIVELETTER}:/maxima-${MAXIMAVERSION}
   # during the crosscompiling procedure, we call configure with shell scripts (wine-xyz.sh) to use the Windows versions.
   # change that after compiliation to the real binaries (clisp.exe for CLISP, sbcl.exe for SBCL, wx86cl64.exe for CCL64).
-  BUILD_COMMAND PATH=${CMAKE_BINARY_DIR}/texinfo-installroot/bin:$ENV{PATH} LANG=C $(MAKE)
-        COMMAND PATH=${CMAKE_BINARY_DIR}/texinfo-installroot/bin:$ENV{PATH} LANG=C $(MAKE) pdf
+  BUILD_COMMAND LANG=C $(MAKE)
+        COMMAND LANG=C $(MAKE) pdf
         COMMAND sed -i s+^.*wine-clisp.sh+clisp.exe+g src/maxima.bat
         COMMAND sed -i s+^.*wine-sbcl.sh+sbcl.exe+g src/maxima.bat
         COMMAND sed -i s+^.*wine-ccl.sh+wx86cl64.exe+g src/maxima.bat
         COMMAND sed -i s+^.*wine-ecl.sh+ecl.exe+g src/maxima.bat
-  INSTALL_COMMAND PATH=${CMAKE_BINARY_DIR}/texinfo-installroot/bin:$ENV{PATH} LANG=C $(MAKE) install DESTDIR=${CMAKE_BINARY_DIR}/maxima-installroot/
-          COMMAND PATH=${CMAKE_BINARY_DIR}/texinfo-installroot/bin:$ENV{PATH} LANG=C $(MAKE) extradocinstall DESTDIR=${CMAKE_BINARY_DIR}/maxima-installroot/
+  INSTALL_COMMAND LANG=C $(MAKE) install DESTDIR=${CMAKE_BINARY_DIR}/maxima-installroot/
+          COMMAND LANG=C $(MAKE) extradocinstall DESTDIR=${CMAKE_BINARY_DIR}/maxima-installroot/
 )
 
 

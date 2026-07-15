@@ -22,8 +22,6 @@
 export LANG=C.UTF-8
 
 MAXIMAGITREPOSITORY=https://git.code.sf.net/p/maxima/code
-PATH=/opt/texinfo-7.0.3/bin:$PATH
-export PATH
 
 rm -rf ~/maxima-test
 
