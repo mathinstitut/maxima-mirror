@@ -1731,12 +1731,10 @@
 (defun case0 (power c b x ec-1)
   (let ((exp1 '((rat simp) 1 4))
 	(exp2 (add b (mul 2 c x)))
-	(exp3 (power c '((rat simp) -3 2)))
-	(exp4 (add (mul 2 c x) (mul -1 b))))
+	(exp3 (power c '((rat simp) -3 2))))
     ;; exp1 = 1/4
     ;; exp2 = b+2*c*x
     ;; exp3 = 1/c^(3/2)
-    ;; exp4 = 2*c*x-b
     (prog (signc p result)
        (setq signc (checksigntm ec-1)
 	     p 1)
@@ -1756,11 +1754,11 @@
 						(power (polfoo c b 0 x) 1//2)))))))))
        (when (eq signc '$negative)
 	 (setq result
-	       (add (augmult (mul exp1 ec-1 exp4
-				  (power (polfoo (mul -1 c) b 0 x) 1//2)))
-		    (augmult (mul* b b '((rat) 1 8)
-				   exp3
-				   `((%asin) ,(mul (inv b) exp4)))))))
+	       (add (augmult (mul exp1 ec-1 exp2
+				  (power (polfoo c b 0 x) 1//2)))
+		    (augmult (mul* b b '((rat) -1 8) ec-1
+				   (power (mul -1 c) -1//2)
+				   `((%asin) ,(mul -1 (inv b) exp2)))))))
        loop
        (when (equal power p) (return result))
        (incf p 2)

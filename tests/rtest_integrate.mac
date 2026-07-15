@@ -6464,3 +6464,9 @@ true;
 
 is(abs(rectform(expand(float(integrate(3*x^2 * exp(-x^2 - 2/x^2), x, 1, 2)))) - 0.2375810321652153) < 1e-10);
 true;
+
+
+/* Bug #4819: "integrate((x - x^2)^(3/2) / x, x ) wrong" */
+
+integrate((x - x^2)^(3/2) / x, x, 0, 1);
+%pi/16;
