@@ -135,6 +135,7 @@ Bug fixes for numbered bugs:
  * \#4814 Default GCD algorithm can't handle algebraic
  * \#4816 csign(imaginary + imaginary) = complex
  * \#4817 integrate(1/(x*sqrt(3*x^2 + 2*x + 1/3), x) and integrate(sqrt(3*x^2 + 2*x + 1/3)/x, x) contain a bogus oscillating factor
+ * \#4818 integrate(x^2 * exp(a*x^2 - 1/x^2), x) wrong
 
 Bug fixes for unnumbered bugs:
 -----------------------------

@@ -6446,3 +6446,21 @@ round(10000000 * float(integrate(1 / ((x + 3) * sqrt(x^2 - 1)), x, -2, -1) - 0.8
 
 round(10000000 * expand(float(integrate(1 / ((x + 3) * sqrt(x^2 - 1)), x, 2, 3) - 0.0818821033610074)));
 0;
+
+
+/* Bug #4818: "integrate(x^2 * exp(a*x^2 - 1/x^2), x) wrong" */
+
+(I : integrate(x^2 * exp(a*x^2 - 1/x^2), x), freeof('integrate, 'diff, I));
+true;
+
+ratsimp(diff(I, x) - x^2 * exp(a*x^2 - 1/x^2));
+0;
+
+kill(I);
+done;
+
+is(abs(rectform(expand(float(integrate(x^2 * exp(x^2 - 1/x^2), x, 1/2, 1)))) - 0.1374323924182213) < 1e-10);
+true;
+
+is(abs(rectform(expand(float(integrate(3*x^2 * exp(-x^2 - 2/x^2), x, 1, 2)))) - 0.2375810321652153) < 1e-10);
+true;

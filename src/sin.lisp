@@ -2558,26 +2558,32 @@
                  (div (power (mul -1 b ($log d)) (div 1 2)) var2)))))))))
 
     ((and (m2-exp-type-4-1 expr var2)
-	  (poseven (cdras 'n w))  ; only for n a positive, even integer
-	  (symbolp (cdras 'a w))) ; a has to be a symbol
+	  (poseven (cdras 'n w)))  ; only for n a positive, even integer
      (a b c d n)
+     
+     (unless (symbolp a)
+       ;; The formula below needs to differentiate w.r.t. a, so it must be a
+       ;; symbol. If it's not, replace it with a gensym, compute, and undo.
+       (let ((original-a a))
+         (setq a (gensym))
+         (putprop a original-a 'original-value)))
+     
      (let (($trigsign nil)) ; Do not simplify erfc(-x) !
 
        (when *debug-integrate*
 	 (format t "~&Type 4-1: z^(2*n)*d^(a*z^2+b/z^2+c) : w = ~A~%" w))
 
        (setq n (div n 2))
-
+      (let ((ans
        (mul const
             (div 1 4)
 	    (power d c)
 	    (power '$%pi (div 1 2))
-	    (simplify (list '(%derivative)
+	    ($diff
 	     (div
-	       (sub
 		 (mul
 		   (power ($log d) (mul -1 n))
-		   (add
+	       (sub
 		     (mul
 		       (power
 			 '$%e
@@ -2585,11 +2591,11 @@
 			   (power (mul -1 a ($log d)) (div 1 2))
 			   (power (mul -1 b ($log d)) (div 1 2))))
 		     ($erfc
-		       (sub
+		       (add
 			 (div
 			   (power (mul -1 b ($log d)) (div 1 2))
 			   var2)
-			 (mul var2 (power (mul -1 ($log d)) (div 1 2))))))))
+			 (mul -1 var2 (power (mul -1 a ($log d)) (div 1 2))))))
 		 (mul
 		   (power
 		     '$%e
@@ -2598,10 +2604,15 @@
 		       (power (mul -1 b ($log d)) (div 1 2))))
 		   ($erfc
 		     (add
-		       (power (mul -1 a ($log d)) (div 1 2))
-		       (div (power (mul -1 b ($log d)) (div 1 2)) var2)))))
+		       (mul var2 (power (mul -1 a ($log d)) (div 1 2)))
+		       (div (power (mul -1 b ($log d)) (div 1 2)) var2))))))
 	       (power (mul -1 a ($log d)) (div 1 2)))
-	     a n)))))
+	     a n))))
+         
+         (let ((original-a (get a 'original-value)))
+           (if original-a
+             (maxima-substitute original-a a ans)
+             ans)))))
 
     ((and (m2-exp-type-5 (facsum-exponent expr var2) var2)
           (maxima-integerp (cdras 'n w))
