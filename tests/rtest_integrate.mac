@@ -6470,3 +6470,37 @@ true;
 
 integrate((x - x^2)^(3/2) / x, x, 0, 1);
 %pi/16;
+
+
+/* Bug #4820: "integrate(1/sqrt(x^2+2*x+1), x) & similar wrong" */
+
+sublist(
+  [1/sqrt(x^2+2*x+1),
+   x/sqrt(x^2+2*x+1),
+   x^2/sqrt(x^2+2*x+1),
+   x^3/sqrt(x^2+2*x+1),
+   1/(x*sqrt(x^2+2*x+1)),
+   1/(x^2*sqrt(x^2+2*x+1)),
+   1/(x^3*sqrt(x^2+2*x+1)),
+   1/(x^2+2*x+1)^(3/2),
+   x/(x^2+2*x+1)^(3/2),
+   x^2/(x^2+2*x+1)^(3/2),
+   x^3/(x^2+2*x+1)^(3/2),
+   1/(x*(x^2+2*x+1)^(3/2)),
+   1/(x^2*(x^2+2*x+1)^(3/2)),
+   1/(x^3*(x^2+2*x+1)^(3/2)),
+   1/(x^2+2*x+1)^(5/2),
+   x/(x^2+2*x+1)^(5/2),
+   x^2/(x^2+2*x+1)^(5/2),
+   x^3/(x^2+2*x+1)^(5/2),
+   1/(x*(x^2+2*x+1)^(5/2)),
+   1/(x^2*(x^2+2*x+1)^(5/2)),
+   1/(x^3*(x^2+2*x+1)^(5/2))],
+  lambda([f],
+    block([F, algebraic : true],
+      F : integrate(f, x),
+      not freeof('integrate, F) or is(ratsimp(scanmap(factor, ratsimp(diff(F, x) - f))) # 0)
+    )
+  )
+);
+[];

@@ -978,22 +978,22 @@
 	(ec-1 (inv c)))
     #+nil (format t "signdisc = ~A~%p = ~A~%" signdisc p)
     (cond ((and (eq signdisc '$zero) (zerop p))
-	   ;; 1/sqrt(R), and R has duplicate roots.  That is, we have
-	   ;; 1/sqrt(c*(x+b/(2c))^2) = 1/sqrt(c)/sqrt((x+b/2/c)^2).
-	   ;;
-	   ;; We return 1/sqrt(c)*log(x+b/2/c).  Shouldn't we return
-	   ;; 1/c*log(|x+b/2/c|)?
-	   (augmult (mul* (power ec-1 1//2)
-			  `((%log) ,(add x (mul b 1//2 ec-1))))))
-	  ((and (eq signdisc '$zero) (plusp p))
-	   ;; 1/sqrt(R^(2*p+1)), with duplicate roots.
-	   ;;
-	   ;; That is, 1/sqrt((c*(x+b/2/c)^(2)^(2*p+1))), or
-	   ;; 1/c^(p+1/2)/(x+b/2/c)^(2*p+1).  So the result is
-	   ;; -1/2/p*c^(-p-1/2)/(x+b/2/c)^(2*p)
-	   (augmult (mul (div -1 (+ p p))
-			 (power c (mul -1//2 (+ p p 1)))
-			 (power (add x (mul b 1//2  ec-1)) (* -2 p)))))
+       ;; 1/sqrt(R), repeated roots.
+       ;; We pass the quadratic in factored form: sqrt(c*(x+b/2/c)^2).
+       ;; The simplifier will decide whether this becomes abs(...) or not,
+       ;; depending on $DOMAIN.
+       (let* ((exp4 (add x (mul b 1//2 ec-1)))
+              (R-factored (mul c (power exp4 2))))
+         (augmult (mul exp4
+                       (power R-factored -1//2)
+                       `((%log) ,(power (power exp4 2) 1//2))))))
+      ((and (eq signdisc '$zero) (plusp p))
+       ;; 1/sqrt(R^(2*p+1)), repeated roots
+       (let* ((exp4 (add x (mul b 1//2 ec-1)))
+              (R-factored (mul c (power exp4 2))))
+         (augmult (mul exp4
+                       (div -1 (+ p p))
+                       (power R-factored (add -1//2 (- p)))))))
 	  ((zerop p)
 	   ;; 1/sqrt(R)
 	   (den1 c b a x))
@@ -1314,99 +1314,48 @@
 				  (add (mul 3 b b)
 				       (mul -4 a c))
 				  (den1 c b a x))))))
+       
        (when (and (zerop p) (eq signdiscrim '$zero))
-	 ;; x^2/sqrt(R), repeated roots
-	 ;;
-	 ;; With repeated roots, R is really of the form
-	 ;; c*x^2+b*x+b^2/4/c = c*(x+b/2/c)^2.  So we have
-	 ;;
-	 ;; x^2/sqrt(c)/(x+b/2/c)
-	 ;;
-	 ;; And the integral of this is
-	 ;;
-	 ;; b^2*log(x+b/2/c)/4/c^(5/2) + x^2/2/sqrt(c) - b*x/2/c^(3/2).
-	 ;;
-	 (setq res2
-	       ;; (add (augmult (mul* b b (list '(rat) 1 4)
-	       ;;			   (power c -3)
-	       ;;			   (list '(%log) exp4)))
-	       ;;	    (augmult (mul ec-1 1//2 (power exp4 2)))
-	       ;;	    (augmult (mul -1 b x exp5)))
-	       (add (augmult (mul* b b '((rat) 1 4)
-				   (power c (div -5 2))
-				   `((%log) ,exp4)))
-		    (augmult (mul (power c -1//2) 1//2 (power x 2)))
-		    (augmult (mul -1//2 b x (power c (div -3 2)))))))
-
+         ;; x^2/sqrt(R), repeated roots
+         (let* ((R-factored (mul c (power exp4 2)))
+                (S (power R-factored 1//2)))
+           (setq res2
+                 (mul exp4 (inv S)
+                      (add (augmult (mul* b b '((rat) 1 4)
+                                          (power c -2)
+                                          `((%log) ,(power (power exp4 2) 1//2))))
+                           (augmult (mul 1//2 (power x 2)))
+                           (augmult (mul -1//2 b x ec-1)))))))
+       
        (when (and (= p 1) (eq signdiscrim '$zero))
-	 ;; x^2/sqrt(R^3), repeated roots
-	 ;;
-	 ;; As above, we have c*(x+b/2/c)^2, so
-	 ;;
-	 ;; x^2/sqrt(R^3) = x^2/sqrt(c^3)/(x+b/2/c)^3
-	 ;;
-	 ;; And the integral is
-	 ;;
-	 ;; log(x+b/2/c)/c^(3/2) + z*(3*z+4*x)/2/c^(3/2)/(z+x)^2
-	 ;;
-	 ;; where z = b/2/c.
-	 (setq res2
-	       ;; (add (augmult (mul* ec-1 (list '(%log) exp4)))
-	       ;;	    (augmult (mul b exp5 (power exp4 -1)))
-	       ;;	    (augmult (mul (list '(rat) -1 8)
-	       ;;			  (power c -3)
-	       ;;			  b b (power exp4 -2))))
-	       (add (augmult (mul* (power c (div -3 2)) `((%log) ,exp4)))
-		    (augmult (mul b x (power c (div -5 2)) (power exp4 -2)))
-		    (augmult (mul (div 3 8)
-				  (power c (div -7 2))
-				  b b (power exp4 -2))))))
-
+         ;; x^2/sqrt(R^3), repeated roots
+         (let* ((R-factored (mul c (power exp4 2)))
+                (S (power R-factored 1//2)))
+           (setq res2
+                 (mul exp4 ec-1 (inv S)
+                      (add (augmult `((%log) ,(power (power exp4 2) 1//2)))
+                           (augmult (mul b x ec-1 (power exp4 -2)))
+                           (augmult (mul (div 3 8)
+                                         (power c -2)
+                                         b b (power exp4 -2))))))))
+       
        (when (and (eq signdiscrim '$zero) (> p 1))
-	 ;; x^2/R^(p+1/2), repeated roots, p > 1
-	 ;;
-	 ;; As above, we have R=c*(x+b/2/c)^2, so the integral is
-	 ;;
-	 ;; x^2/(x+b/2/c)^(2*p+1)/c^(p+1/2).
-	 ;;
-	 ;; Let d = b/2/c.  Then write x^2 =
-	 ;; (x+d)^2-2*d*(x+d)+d^2.  The integrand becomes
-	 ;;
-	 ;; 1/(x+d)^(2*p-1) - 2*d/(x+d)^(2*p) + d^2/(x+d)^(2*p+1)
-	 ;;
-	 ;; whose integral is
-	 ;;
-	 ;; 1/(2*p-2)/(x+d)^(2*p-2) - 2*d/(2*p-1)/(x+d)^(2*p-1)
-	 ;;   + d^2/(2*p)/(x+d)^(2*p)
-	 ;;
-	 ;; And don't forget the factor c^(-p-1/2).  Finally,
-	 ;;
-	 ;; 1/c^(p+1/2)/(2*p-2)/(x+d)^(2*p-2)
-	 ;;  - b/c^(p+3/2)/(2*p-1)/(x+d)^(2*p-1)
-	 ;;  + b^2/8/c^(p+5/2)/p/(x+d)^(2*p)
-	 (setq res2
-	       ;; (add (augmult (mul ec-1
-	       ;;			  (power exp4 exp6)
-	       ;;			  (inv exp6)))
-	       ;;	    (augmult (mul -1 b exp5 (inv exp7)
-	       ;;			  (power exp4 exp7)))
-	       ;;	    (augmult (mul b b (list '(rat) -1 8)
-	       ;;			  (power c -3)
-	       ;;			  (inv p)
-	       ;;			  (power exp4
-	       ;;				 (* -2 p)))))
-	       (add (augmult (mul (inv (power c (add p 1//2)))
-				  (power exp4 exp6)
-				  (inv exp6)))
-		    (augmult (mul -1 b
-				  (inv (power c (add p (div 3 2))))
-				  (inv exp7)
-				  (power exp4 exp7)))
-		    (augmult (mul b b '((rat simp) -1 8)
-				  (inv (power c (add p (div 5 2))))
-				  (inv p)
-				  (power exp4
-					 (* -2 p)))))))
+         ;; x^2/R^(p+1/2), repeated roots, p > 1
+         (let* ((R-factored (mul c (power exp4 2)))
+                (S (power R-factored 1//2)))
+           (setq res2
+                 (mul exp4 (power c (- p)) (inv S)
+                      (add (augmult (mul (power exp4 exp6)
+                                         (inv exp6)))
+                           (augmult (mul -1 b ec-1
+                                         (inv exp7)
+                                         (power exp4 exp7)))
+                           (augmult (mul b b '((rat simp) -1 8)
+                                         (power c -2)
+                                         (inv p)
+                                         (power exp4
+                                                (* -2 p)))))))))
+       
        (when (= controlpow 2)
 	 ;; x^2/R^(p+1/2)
 	 ;;

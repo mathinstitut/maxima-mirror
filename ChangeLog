@@ -137,6 +137,7 @@ Bug fixes for numbered bugs:
  * \#4817 integrate(1/(x*sqrt(3*x^2 + 2*x + 1/3), x) and integrate(sqrt(3*x^2 + 2*x + 1/3)/x, x) contain a bogus oscillating factor
  * \#4818 integrate(x^2 * exp(a*x^2 - 1/x^2), x) wrong
  * \#4819 integrate((x - x^2)^(3/2) / x, x ) wrong
+ * \#4820 integrate(1/sqrt(x^2+2*x+1), x) & similar wrong
 
 Bug fixes for unnumbered bugs:
 -----------------------------

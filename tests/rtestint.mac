@@ -50,12 +50,12 @@ integrate(1/x/sqrt(-x^2+x-1),x);
 0;
 
 /* 1/sqrt(R), repeated roots */
-integrate(1/sqrt(c*x^2+b*x+b^2/4/c),x);
-log(x+b/(2*c))/sqrt(c);
+integrate(1/sqrt(c*x^2+b*x+b^2/4/c),x), ratsimp;
+((2*c*x+b)*log(abs(2*c*x+b)/(2*c)))/(sqrt(c)*abs(2*c*x+b));
 
 /* 1/sqrt(R^(2*p+1), p > 0, repeated roots */
-integrate(1/sqrt(c*x^2+b*x+b^2/4/c)^3,x);
--1/(2*c^(3/2)*(x+b/(2*c))^2);
+integrate(1/sqrt(c*x^2+b*x+b^2/4/c)^3,x), ratsimp;
+-((2*sqrt(c))/((2*c*x+b)*abs(2*c*x+b)));
 
 
 /*
@@ -136,16 +136,14 @@ integrate(x^2/sqrt(R),x);
 /*
  * Test of repeated roots
  */
-integrate(x^2/sqrt(c*x^2+b*x+b^2/4/c),x);
-b^2*log(x+b/(2*c))/(4*c^(5/2))+x^2/(2*sqrt(c))-b*x/(2*c^(3/2));
+integrate(x^2/sqrt(c*x^2+b*x+b^2/4/c),x), ratsimp;
+((2*b^2*c*x+b^3)*log(abs(2*c*x+b)/(2*c))+4*c^3*x^3-2*b*c^2*x^2-2*b^2*c*x)/(4*c^(5/2)*abs(2*c*x+b));
 
-integrate(x^2/sqrt(c*x^2+b*x+b^2/4/c)^3,x);
-log(x+b/(2*c))/c^(3/2)+b*x/(c^(5/2)*(x+b/(2*c))^2)
-			      +3*b^2/(8*c^(7/2)*(x+b/(2*c))^2);
+integrate(x^2/sqrt(c*x^2+b*x+b^2/4/c)^3,x), ratsimp;
+((8*c^2*x^2+8*b*c*x+2*b^2)*log(abs(2*c*x+b)/(2*c))+8*b*c*x+3*b^2)/(sqrt(c)*(4*c^2*x+2*b*c)*abs(2*c*x+b));
 
-integrate(x^2/sqrt(c*x^2+b*x+b^2/4/c)^5,x);
--1/(2*c^(5/2)*(x+b/(2*c))^2)+b/(3*c^(7/2)*(x+b/(2*c))^3)
-				    -b^2/(16*c^(9/2)*(x+b/(2*c))^4);
+integrate(x^2/sqrt(c*x^2+b*x+b^2/4/c)^5,x), ratsimp;
+-((24*c^2*x^2+8*b*c*x+b^2)/(sqrt(c)*(24*c^3*x^3+36*b*c^2*x^2+18*b^2*c*x+3*b^3)*abs(2*c*x+b)));
 
 /*
  * Test denmnumn sqrt(R^(2*p+1))/x^m.
