@@ -6510,3 +6510,15 @@ sublist(
 
 integrate(sec(x)*tan(x)^3.0, x);
 sec(x)^3/3 - sec(x);
+
+
+/* Another case of bug #4818 */
+
+(I : integrate(x^2 * 2^(y*x^2 + y/x^2), x), freeof('integrate, 'diff, I));
+true;
+
+radcan(diff(I, x) - x^2 * 2^(y*x^2 + y/x^2));
+0;
+
+kill(I);
+done;

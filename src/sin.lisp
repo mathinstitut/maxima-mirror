@@ -2608,13 +2608,15 @@
          (setq a (gensym))
          (putprop a original-a 'original-value)))
      
-     (let (($trigsign nil)) ; Do not simplify erfc(-x) !
+     (let* (($trigsign nil) ; Do not simplify erfc(-x) !
+            (original-a a)
+            (a (gensym)))
 
        (when *debug-integrate*
 	 (format t "~&Type 4-1: z^(2*n)*d^(a*z^2+b/z^2+c) : w = ~A~%" w))
 
        (setq n (div n 2))
-      (let ((ans
+      (maxima-substitute original-a a
        (mul const
             (div 1 4)
 	    (power d c)
@@ -2647,12 +2649,7 @@
 		       (mul var2 (power (mul -1 a ($log d)) (div 1 2)))
 		       (div (power (mul -1 b ($log d)) (div 1 2)) var2))))))
 	       (power (mul -1 a ($log d)) (div 1 2)))
-	     a n))))
-         
-         (let ((original-a (get a 'original-value)))
-           (if original-a
-             (maxima-substitute original-a a ans)
-             ans)))))
+	     a n)))))
 
     ((and (m2-exp-type-5 (facsum-exponent expr var2) var2)
           (maxima-integerp (cdras 'n w))
