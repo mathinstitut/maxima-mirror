@@ -1920,3 +1920,11 @@
   \"Is x positive, negative or zero?\"."
   boolean
   :properties ((evflag t)))
+
+(defmvar $integrate_signum_mode nil ;'mabs
+  "If NIL, integration routines will not try to handle absolute value or signum
+  functions in the integrand (useful for compatibility with the abs_integrate
+  package.
+  If 'MABS, use absolute value, e.g. integrate(abs(x), x) = x * abs(x) / 2.
+  If '%SIGNUM, use signum, e.g. integrate(abs(x), x) = x^2 * signum(x) / 2."
+  :setting-list (nil mabs %signum))

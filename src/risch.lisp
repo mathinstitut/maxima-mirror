@@ -98,6 +98,202 @@
   (and (mqapplyp exp) (eq (subfunname exp) '$li)
        (or (null sub) (equal sub (car (subfunsubs exp))))))
 
+(defun extract-signums (expr ivar)
+  "Preprocesses the integrand EXPR with respect to IVAR for the Risch algorithm
+  by extracting perfect squares out of even roots and replacing absolute values
+  with piecewise-constant signum symbols. Returns multiple values: the new
+  integrand and an association list for the signum symbols."
+  (let (signum-alist
+        symbol-alist
+        ($logsimp t)) ; needed for RADCAN1, bound to NIL by the calling RISCHINT
+    (labels ((get-signum-gensym (e)
+               "Retrieves the signum gensym for E or generates a fresh one."
+               (let ((sym (cdr (assoc e signum-alist :test #'alike1))))
+                 (if sym
+                   sym
+                   (let ((sym (gensym "RISCH-SIGNUM-")))
+                     (putprop sym t 'internal)
+                     (push (cons e sym) signum-alist)
+                     (push (cons sym e) symbol-alist)
+                     sym))))
+             (collect-trig-args (e &optional acc)
+               "Collects apparent arguments of trigonometric functions in
+               exponential representation."
+               (let (op expo)
+                 (cond
+                   ((mapatom e)
+                     acc)
+                   ((and (eq (setq op (caar e)) 'mexpt)
+                         (eq (cadr e) '$%e)
+                         (mtimesp (setq expo (caddr e)))
+                         (member '$%i (cdr expo))
+                         (not (mnegp ($numfactor expo))))
+                     (pushnew (radcan1 (div expo '$%i) ivar) acc :test #'alike1))
+                   ((and (eq op 'mexpt)
+                         (integerp (caddr e)))
+                     (collect-trig-args (cadr e) acc))
+                   ((member op '(mplus mtimes))
+                     (dolist (i (cdr e))
+                       (setq acc (collect-trig-args i acc)))
+                     acc)
+                   (t
+                     acc))))
+             (factor (op e)
+               "Factors the expression E under a root (OP = 'MEXPT) or inside an
+               absolute value (OP = 'MABS) or signum (OP = '%SIGNUM) so that
+               Maxima can split e.g. sqrt(x^4+x^2) into sqrt(x^2+1)*abs(x).
+               For roots, tries to factor out even powers of trigonometric
+               functions identified in the exponential form."
+               (if (member op '(%signum mabs))
+                 ;; Do full factorization if we're in signum or abs.
+                 ($factor (radcan1 e ivar))
+                 ;; We're under a root.
+                 (let ((trig-args (collect-trig-args e))
+                       trig-factors)
+                   ;; Sort the arguments of trigonometric functions descending
+                   ;; by frequency so that larger multiples (e.g. 2*x) are
+                   ;; processed before smaller ones (e.g. x).
+                   ;; If x were processed first, it would silently expand and
+                   ;; "fracture" sin(2*x)^2 into 4*sin(x)^2*cos(x)^2.
+                   (setq trig-args (sort trig-args
+                                         #'(lambda (a b)
+                                             (let ((ratio (sratsimp (div a b))))
+                                               (if (mnump ratio)
+                                                 (eq t (mgrp (ftake 'mabs ratio) 1))
+                                                 (great a b))))))
+                   (setq e (ratf (radcan1 e ivar))) ; We'll work in CRE form.
+                   (dolist (arg trig-args)
+                     ;; For each argument, do a normal pass followed by a
+                     ;; half-angle pass. The half-angle pass allows us to, e.g.,
+                     ;; extract a factor of sin(x/2)^2 out of 1-cos(x).
+                     (dolist (is-half '(nil t))
+                       ;; Try to factor out {sin,cos}(arg)^{2,-2} repeatedly.
+                       ;; This is a simple polynomial division in numerator and
+                       ;; denominator when substituting %e^(%i*arg) = u:
+                       ;; sin(arg)^2 = (u^2 - 1)^2 / (-4*u^2)
+                       ;; cos(arg)^2 = (u^2 + 1)^2 / (4*u^2)
+                       (let* ((arg* (if is-half (div arg 2) arg))
+                              (eix-full (radcan1 (power '$%e (mul '$%i arg)) ivar))
+                              (eix-target (if is-half
+                                            (radcan1 (power '$%e (mul '$%i arg*)) ivar)
+                                            eix-full))
+                              ;; For the half-angle pass, explicitly map the
+                              ;; full angle to u^2 first to bypass $RATSUBST's
+                              ;; fractional "blind spot".
+                              (substed (if is-half
+                                         ($ratsubst 'u eix-target
+                                                    ($ratsubst (power 'u 2) eix-full e))
+                                         ($ratsubst 'u eix-target e)))
+                              (header (car substed))
+                              (varlist (caddr header))
+                              (genvar (cadddr header))
+                              (u-pos (position 'u varlist)))
+                         (when u-pos
+                           (let* ((gu (nth u-pos genvar))
+                                  (u-sq (list gu 2 1)) ; u^2
+                                  (sin-sq-u-core (list gu 4 1 2 -2 0 1)) ; (u^2 - 1)^2
+                                  (cos-sq-u-core (list gu 4 1 2 2 0 1)) ; (u^2 + 1)^2
+                                  (num (cadr substed))
+                                  (denom (cddr substed))
+                                  success)
+                             (macrolet ((try-pull (core const op pow)
+                                          (let ((poly-c (if (plusp pow) 'num 'denom))
+                                                (poly-u (if (plusp pow) 'denom 'num)))
+                                            `(let* ((rem-u (testdivide ,poly-u u-sq))
+                                                    (rem-c (and rem-u (testdivide (ptimes ,const ,poly-c)
+                                                                                  ,core))))
+                                               (when rem-c
+                                                 (setq ,poly-c rem-c
+                                                       ,poly-u rem-u
+                                                       success t)
+                                                 ;; Mark the trigonometric function with
+                                                 ;; a special 'FACTORED-OUT header flag,
+                                                 ;; so we can recognize it.
+                                                 (push (list '(mexpt) (list (list ',op 'factored-out) arg*)
+                                                             ,pow)
+                                                       trig-factors)
+                                                 t)))))
+                               (loop
+                                 (cond
+                                   ((try-pull sin-sq-u-core -4 %sin 2))
+                                   ((try-pull cos-sq-u-core 4 %cos 2))
+                                   ((try-pull sin-sq-u-core -4 %sin -2))
+                                   ((try-pull cos-sq-u-core 4 %cos -2))
+                                   (t (return)))))
+                             (when success
+                               ;; We pulled out a factor - reassemble the
+                               ;; remaining E, and convert to CRE form again.
+                               ;; Use MAXIMA-SUBSTITUTE instead of $RATSUBST,
+                               ;; because we need simplification applied.
+                               (setq e (ratf (maxima-substitute eix-target 'u
+                                                                (cons header (ratqu num denom)))))))))))
+                   ;; Perform square-free factorization of the remaining expression.
+                   (mul (muln trig-factors t) ($sqfr (ratdisrep e))))))
+             (process (e)
+               "Recursively processes the expression E, trying to pull out square
+               factors out of even roots and rewriting signum(...) and abs(...)
+               using symbols that can be treated as piecewise-constant for the
+               purpose of integration."
+               (let (expo arg op squared)
+                 (cond
+                   ((mapatom e)
+                     e)
+                   ((and (eq (setq op (caar e)) 'mexpt)
+                         (ratnump (setq expo (caddr e)))
+                         (evenp (caddr expo)))
+                     ;; We have an even root. Try to pull out square factors,
+                     ;; which Maxima can turn into abs(...).
+                     (let* ((base-factored (factor op (process (cadr e))))
+                            (result (power base-factored expo)))
+                       (if (alike1 result e)
+                         result
+                         (process result))))
+                   ((and (eq op 'mabs)
+                         (consp (setq arg (cadr e)))
+                         (member (caar arg) '(%sin %cos))
+                         (member 'factored-out (cdar arg)))
+                     ;; An even power of a trigonometric function that we pulled
+                     ;; out of an even root earlier, which Maxima has turned into
+                     ;; abs(...). Generate the signum symbol for it, and convert
+                     ;; the expression back to exponential form.
+                     (mul (get-signum-gensym arg) ($exponentialize arg)))
+                   ((and (member op '(%signum mabs))
+                         (alike1 (cons '(mabs) (cdr e))
+                                 (root (setq squared (power (setq arg (cadr e)) 2)) 2)))
+                     ;; A signum or absolute value that was already present in
+                     ;; the expression. Try to factor it so that Maxima can
+                     ;; split it, then reprocess. (Not strictly necessary.)
+                     ;; If factoring isn't possible, generate the signum symbol
+                     ;; and rewrite the expression in terms of it.
+                     (let* ((arg-factored (factor op (process arg)))
+                            (result (ftake op arg-factored)))
+                       (if (alike1 result e)
+                         (if (eq op '%signum)
+                           (get-signum-gensym arg)
+                           (mul (get-signum-gensym arg) arg))
+                         (process result))))
+                   (t
+                     (recur-apply #'process e)))))
+             (postprocess (e)
+               "Recursively looks for signum symbols S in E that have integer powers
+               and turns S^even into 1 and S^odd into S."
+               (let (base expo)
+                 (cond
+                   ((mapatom e)
+                     e)
+                   ((and (mexptp e)
+                         (symbolp (setq base (cadr e)))
+                         (assoc (cadr e) symbol-alist)
+                         (integerp (setq expo (caddr e))))
+                     (if (evenp expo)
+                       1
+                       base))
+                   (t
+                     (recur-apply #'postprocess e))))))
+      (if $integrate_signum_mode
+        (values (postprocess (process expr)) symbol-alist)
+        expr))))
+
 (defun rischint (exp risch-intvar &aux ($logarc nil) ($exponentialize nil)
                      ($gcd '$algebraic) ($algebraic t) (implicit-real t)
                      ($float nil) ($numer nil)
@@ -118,12 +314,13 @@
      (if (and (atom risch-intvar)
 	      (isinop exp risch-intvar))
 	 (go noun))
+    (multiple-value-bind (exp symbol-alist) (extract-signums exp risch-intvar)
      (multiple-value-setq (rischform-value risch-trigint risch-hypertrigint risch-operator)
        (rischform exp risch-intvar))
      (cond (risch-trigint
-	    (return (trigin1 exp risch-intvar)))
+	    (return (restore-signums (trigin1 exp risch-intvar) symbol-alist)))
 	   (risch-hypertrigint
-	    (return (hypertrigint1 exp risch-intvar t)))
+	    (return (restore-signums (hypertrigint1 exp risch-intvar t) symbol-alist)))
 	   (risch-operator
 	    (go noun)))
      (multiple-value-setq (risch-y risch-operator)
@@ -141,14 +338,16 @@
      (setq z (tryrisch (cdr risch-y) risch-mainvar risch-ratform risch-intvar risch-liflag risch-degree risch-var))
      (setf (caddr risch-ratform) varlist)
      (setf (cadddr risch-ratform) genvar)
-     (return (cond ((atom (cdr z))
+     (let ((ans
+           (cond ((atom (cdr z))
 		    (disrep (car z) risch-ratform))
 		   (t
 		    (let (($logsimp t)
 			  ($%e_to_numlog t))
 		      (simplify (list* '(mplus)
 				       (disrep (car z) risch-ratform)
-				       (cdr z)))))))
+				       (cdr z))))))))
+       (return (restore-signums ans symbol-alist))))
    noun
      (return (list '(%integrate) exp risch-intvar))))
 
@@ -193,9 +392,12 @@
 	      risch-operator))))
 
 (defun hypertrigint1 (exp risch-var hyperfunc)
-  (let ((result (if hyperfunc
-                    (sinint (resimplify exp) risch-var)
-                    (rischint (resimplify exp) risch-var))))
+ (let ((exp (resimplify exp)))
+  (setq $exponentialize nil
+        $logarc nil)
+   (let ((result (if hyperfunc
+                     (sinint exp risch-var)
+                     (rischint exp risch-var))))
     ;; The result can contain solvable integrals. Look for this case.
     (if (isinop result '%integrate)
         ;; Found an integral. Evaluate the result again.
@@ -203,7 +405,7 @@
         ;; rischint again from the integrator. This avoids endless loops.
         (let ((*in-risch-p* t)) 
           (meval (list '($ev) result '$nouns)))
-        result)))
+        result))))
 
 (defun trigin1 (risch-*exp risch-var)
   (let ((yyy (hypertrigint1 risch-*exp risch-var nil)))
@@ -1281,6 +1483,25 @@
 			      (ptimes exps
 				      (make-poly (p-var p) exp 1)))))))
 
+(defun restore-signums (expr symbol-alist)
+  "Replaces the signum symbols in EXPR, created by EXTRACT-SIGNUMS, with the
+  signum or abs expressions they represent, depending on $INTEGRATE_SIGNUM_MODE."
+  (labels ((process (e)
+             (cond
+               ((symbolp e)
+                 (let ((arg (cdr (assoc e symbol-alist :test #'eq))))
+                   (if arg
+                     (if (eq $integrate_signum_mode '%signum)
+                       (ftake '%signum arg)
+                       (div arg (ftake 'mabs arg)))
+                     e)))
+               ((mapatom e)
+                 e)
+               (t
+                 (recur-apply #'process e)))))
+    (if $integrate_signum_mode
+      (process expr)
+      expr)))
 
 (defun intsetup (exp risch-*var)
   (prog (varlist clist $factorflag dlist genpairs old risch-y z $ratfac $keepfloat

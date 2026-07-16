@@ -14,6 +14,9 @@ Also, Richard Hennessy identified several bugs in this code. */
 
 qput(abs_integrate, 1, version);
 
+/* Disable built-in signum integration, because this package can do better. */
+integrate_signum_mode : false;
+
 eval_when(translate, error("abs_integrate does not translate or compile correctly."));
 
 load("opsubst");
