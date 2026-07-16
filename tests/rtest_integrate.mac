@@ -6522,3 +6522,13 @@ radcan(diff(I, x) - x^2 * 2^(y*x^2 + y/x^2));
 
 kill(I);
 done;
+
+
+/* Antiderivative of acoth(x) with logabs */
+
+block(
+  [logabs : true, d],
+  d : float(at_difference(integrate(acoth(x), x), x, 2, 4)),
+  is(freeof(%i, d) and abs(d - 0.7277579150809212) < 1e-10)
+);
+true;

@@ -738,7 +738,6 @@
 (defprop %atanh ((x) ((mplus) ((mtimes) x ((%atanh) x)) ((mtimes) ((rat) 1 2) ((%log) ((mplus) 1 ((mtimes) -1 ((mexpt) x 2))))))) integral)
 (defprop %acsch ((x) ((mplus) ((mtimes) ((rat) -1 2) ((%log) ((mplus) -1 ((mexpt) ((mplus) 1 ((mexpt) x -2)) ((rat) 1 2))))) ((mtimes) ((rat) 1 2) ((%log) ((mplus) 1 ((mexpt) ((mplus) 1 ((mexpt) x -2)) ((rat) 1 2))))) ((mtimes) x ((%acsch) x)))) integral)
 (defprop %asech ((x) ((mplus) ((mtimes) -1 ((%atan) ((mexpt) ((mplus) -1 ((mexpt) x -2)) ((rat) 1 2)))) ((mtimes) x ((%asech) x)))) integral)
-(defprop %acoth ((x) ((mplus) ((mtimes) x ((%acoth) x)) ((mtimes) ((rat) 1 2) ((%log) ((mplus) 1 ((mtimes) -1 ((mexpt) x 2))))))) integral)
 
 ;; Define a little helper function to be used in antiderivatives.
 ;; Depending on the logabs flag, it either returns log(x) or log(abs(x)).
@@ -774,6 +773,11 @@
 (defun integrate-csch (x)
   (log-or-logabs (take '(%tanh) (mul '((rat simp) 1 2) x))))
 (putprop '%csch `((x) ,'integrate-csch) 'integral)
+
+;; ... the same for acoth(x) ...
+(defun integrate-acoth (x)
+  (add (mul x (ftake '%acoth x)) (mul '((rat simp) 1 2) (log-or-logabs (sub 1 (power x 2))))))
+(putprop '%acoth `((x), 'integrate-acoth) 'integral)
 
 ;; integrate(x^n,x) = if n # -1 then x^(n+1)/(n+1) else log-or-logabs(x).
 (defun integrate-mexpt-1 (x n)
@@ -2600,13 +2604,6 @@
     ((and (m2-exp-type-4-1 expr var2)
 	  (poseven (cdras 'n w)))  ; only for n a positive, even integer
      (a b c d n)
-     
-     (unless (symbolp a)
-       ;; The formula below needs to differentiate w.r.t. a, so it must be a
-       ;; symbol. If it's not, replace it with a gensym, compute, and undo.
-       (let ((original-a a))
-         (setq a (gensym))
-         (putprop a original-a 'original-value)))
      
      (let* (($trigsign nil) ; Do not simplify erfc(-x) !
             (original-a a)
