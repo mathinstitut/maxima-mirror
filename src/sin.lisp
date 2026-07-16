@@ -282,48 +282,6 @@
                     var2))))
   ;;------------------------------------------------------------------------------
   
-  (defun partition-factors (expr ivar)
-    ;; TODO: Docstring and documentation
-    (labels ((factors (e)
-               (if (mtimesp e)
-                 (cdr e)
-                 (list e)))
-             (is-safe-signum-or-abs (e)
-               (and (consp e)
-                    (member (caar e) '(%signum mabs))
-                    (alike1 (cons '(mabs) (cdr e)) (root (power (cadr e) 2) 2))
-                    (caar e))))
-      (destructuring-bind (const . nonconst) (partition expr ivar 1)
-        (if (not $integrate_signum_mode)
-          (values const nonconst)
-          (let ((const (factors const))
-                (nonconst (factors nonconst))
-                op base expo)
-            (dolist (factor nonconst)
-              (cond
-                ((atom factor))
-                ((setq op (is-safe-signum-or-abs factor))
-                  (let ((arg (cadr factor)))
-                    (push (if (eq $integrate_signum_mode '%signum)
-                            (ftake '%signum arg)
-                            (div arg (ftake 'mabs arg)))
-                          const)
-                    (setq nonconst (remove factor nonconst))
-                    (when (eq op 'mabs)
-                      (push arg nonconst))))
-                ((and (mexptp factor)
-                      (integerp (setq expo (caddr factor)))
-                      (setq op (is-safe-signum-or-abs (setq base (cadr factor)))))
-                  (let* ((arg (cadr base))
-                         (signum (if (eq $integrate_signum_mode '%signum)
-                                   (ftake '%signum arg)
-                                   (div arg (ftake 'mabs arg)))))
-                    (push (if (evenp expo) (power signum 2) signum) const)
-                    (setq nonconst (remove factor nonconst))
-                    (when (eq op 'mabs)
-                      (push (power arg expo) nonconst))))))
-            (values (muln const t) (muln nonconst t)))))))
-
   ;; This is the main integration routine.  It is called from sinint.
 
   (defun integrator (*exp* var2 &optional stack)
@@ -338,9 +296,12 @@
        (if (freevar2 *exp* var2) (return (mul2* *exp* var2)))
      
        ;; Remove constant factors
-       (multiple-value-setq (const *exp*) (partition-factors *exp* var2))
+       (setq w (partition *exp* var2 1))
+       (setq const (car w))
+       (setq *exp* (cdr w))
        #+nil
        (progn
+         (format t "w = ~A~%" w)
          (format t "const = ~A~%" const)
          (format t "exp = ~A~%" *exp*))
      
