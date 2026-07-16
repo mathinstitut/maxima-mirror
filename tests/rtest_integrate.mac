@@ -6504,3 +6504,9 @@ sublist(
   )
 );
 [];
+
+
+/* Bug #4821: "integrate(sec(x)*tan(x)^3.0, x) is wrong" */
+
+integrate(sec(x)*tan(x)^3.0, x);
+sec(x)^3/3 - sec(x);

@@ -138,6 +138,7 @@ Bug fixes for numbered bugs:
  * \#4818 integrate(x^2 * exp(a*x^2 - 1/x^2), x) wrong
  * \#4819 integrate((x - x^2)^(3/2) / x, x ) wrong
  * \#4820 integrate(1/sqrt(x^2+2*x+1), x) & similar wrong
+ * \#4821 integrate(sec(x)*tan(x)^3.0, x) is wrong
 
 Bug fixes for unnumbered bugs:
 -----------------------------

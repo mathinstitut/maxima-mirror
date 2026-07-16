@@ -281,6 +281,48 @@
 		      (simplify (list '(mexpt) w (caddr expres))))
                     var2))))
   ;;------------------------------------------------------------------------------
+  
+  (defun partition-factors (expr ivar)
+    ;; TODO: Docstring and documentation
+    (labels ((factors (e)
+               (if (mtimesp e)
+                 (cdr e)
+                 (list e)))
+             (is-safe-signum-or-abs (e)
+               (and (consp e)
+                    (member (caar e) '(%signum mabs))
+                    (alike1 (cons '(mabs) (cdr e)) (root (power (cadr e) 2) 2))
+                    (caar e))))
+      (destructuring-bind (const . nonconst) (partition expr ivar 1)
+        (if (not $integrate_signum_mode)
+          (values const nonconst)
+          (let ((const (factors const))
+                (nonconst (factors nonconst))
+                op base expo)
+            (dolist (factor nonconst)
+              (cond
+                ((atom factor))
+                ((setq op (is-safe-signum-or-abs factor))
+                  (let ((arg (cadr factor)))
+                    (push (if (eq $integrate_signum_mode '%signum)
+                            (ftake '%signum arg)
+                            (div arg (ftake 'mabs arg)))
+                          const)
+                    (setq nonconst (remove factor nonconst))
+                    (when (eq op 'mabs)
+                      (push arg nonconst))))
+                ((and (mexptp factor)
+                      (integerp (setq expo (caddr factor)))
+                      (setq op (is-safe-signum-or-abs (setq base (cadr factor)))))
+                  (let* ((arg (cadr base))
+                         (signum (if (eq $integrate_signum_mode '%signum)
+                                   (ftake '%signum arg)
+                                   (div arg (ftake 'mabs arg)))))
+                    (push (if (evenp expo) (power signum 2) signum) const)
+                    (setq nonconst (remove factor nonconst))
+                    (when (eq op 'mabs)
+                      (push (power arg expo) nonconst))))))
+            (values (muln const t) (muln nonconst t)))))))
 
   ;; This is the main integration routine.  It is called from sinint.
 
@@ -296,12 +338,9 @@
        (if (freevar2 *exp* var2) (return (mul2* *exp* var2)))
      
        ;; Remove constant factors
-       (setq w (partition *exp* var2 1))
-       (setq const (car w))
-       (setq *exp* (cdr w))
+       (multiple-value-setq (const *exp*) (partition-factors *exp* var2))
        #+nil
        (progn
-         (format t "w = ~A~%" w)
          (format t "const = ~A~%" const)
          (format t "exp = ~A~%" *exp*))
      
@@ -1467,17 +1506,17 @@
       (not (member x '(sin* cos* sec* tan*) :test #'eq))
       (and (trigfree (car x)) (trigfree (cdr x)))))
 
-(defun rat1 (expr aa bb cc)
+(defun rat1 (expr aa bb cc &optional (offset 1))
   (prog (b1 *notsame*)
      (declare (special *yy* *notsame*))
      (when (and (numberp expr) (zerop expr))
        (return nil))
      (setq b1 (subst bb 'b '((mexpt) b (n even))))
      (return (prog2
-		 (setq *yy* (rats expr aa b1 cc))
+		 (setq *yy* (rats expr aa b1 cc offset))
 		 (cond ((not *notsame*) *yy*))))))
 
-(defun rats (expr aa b1 cc)
+(defun rats (expr aa b1 cc offset)
   (prog (y)
      (declare (special *notsame*))
      (return
@@ -1487,24 +1526,24 @@
 		     (setq *notsame* t))
 		    (t expr)))
 	     ((setq y (m2 expr b1))
-	      (f3 y cc))
-	     (t (cons (car expr) (mapcar #'(lambda (g) (rats g aa b1 cc))
+	      (f3 y cc offset))
+	     (t (cons (car expr) (mapcar #'(lambda (g) (rats g aa b1 cc offset))
                                          (cdr expr))))))))
 
-(defun f3 (y cc)
+(defun f3 (y cc offset)
   (maxima-substitute cc
 		     'c
 		     (maxima-substitute (quotient (cdr (assoc 'n y :test #'eq)) 2)
 					'n
-					'((mexpt)
+					`((mexpt)
 					  ((mplus)
-					   1
+					   ,offset
 					   ((mtimes)
 					    c
 					    ((mexpt) x 2)))
 					  n))))
 
-(defun odd1 (n cc)
+(defun odd1 (n cc &optional (offset 1))
   (declare (special *yz*))
   (cond ((not (numberp n)) nil)
 	((not (equal (rem n 2) 0))
@@ -1512,7 +1551,7 @@
 	       (maxima-substitute cc
 				  'c
 				  (list '(mexpt)
-					'((mplus) 1 ((mtimes) c ((mexpt) x 2)))
+					`((mplus) ,offset ((mtimes) c ((mexpt) x 2)))
 					(quotient (1- n) 2)))))
 	(t nil)))
 
@@ -1650,8 +1689,9 @@
      (when (and (rat1 y 'tan* 'sec* 1) (setq repl (list '(%tan) var2)))
        (go get1))
 
-     (when (and (m2 y '((coeffpt) (c rat1 sec* tan* 1) ((mexpt) tan* (n odd1 1))))
+     (when (and (m2 y '((coeffpt) (c rat1 sec* tan* 1 -1) ((mexpt) tan* (n odd1 1 -1))))
            (setq repl (list '(%sec) var2)))
+       (setq *yy* (list '(mquotient) *yy* 'x))
        (go getout))
      (when (not (alike1 (setq repl ($expand expr)) expr))
        (return (integrator repl var2)))
