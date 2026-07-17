@@ -254,7 +254,8 @@ in the interval of integration.")
 
 (defun sinintp (expr ivar)
   ;; Is this expr a candidate for SININT ?
-  (let ((expr (factor expr))
+  (let* (limitp ; to prevent questions from being asked about IVAR
+    (expr (factor expr))
 	(numer nil)
 	(denom nil))
     (setq numer ($num expr))
