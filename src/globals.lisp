@@ -1921,7 +1921,7 @@
   boolean
   :properties ((evflag t)))
 
-(defmvar $integrate_signum_mode nil ;'mabs
+(defmvar $integrate_signum_mode 'mabs
   "If NIL, integration routines will not try to handle absolute value or signum
   functions in the integrand (useful for compatibility with the abs_integrate
   package.
