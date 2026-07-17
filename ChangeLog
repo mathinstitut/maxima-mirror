@@ -132,6 +132,7 @@ Bug fixes for numbered bugs:
  * \#4801 Bogus derivatives when arguments match variable names in DEFGRAD
  * \#4800 zeroa, zerob are listed by listofvars
  * \#4806 Taylor: bad singular datum
+ * \#4809 integrate(sqrt(x^2+x^3),x,-1,1) asks for the sign of x
  * \#4814 Default GCD algorithm can't handle algebraic
  * \#4816 csign(imaginary + imaginary) = complex
  * \#4817 integrate(1/(x*sqrt(3*x^2 + 2*x + 1/3), x) and integrate(sqrt(3*x^2 + 2*x + 1/3)/x, x) contain a bogus oscillating factor
