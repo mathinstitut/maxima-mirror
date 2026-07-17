@@ -76,7 +76,47 @@
   (and (null (pzerop a))
        (free a var2)))
 
-
+(defun partition-factors (expr ivar)
+  ;; TODO: Docstring and documentation
+  (labels ((factors (e)
+             (if (mtimesp e)
+               (cdr e)
+               (list e)))
+           (is-safe-signum-or-abs (e)
+             (and (consp e)
+                  (member (caar e) '(%signum mabs))
+                  (alike1 (cons '(mabs) (cdr e)) (root (power (cadr e) 2) 2))
+                  (caar e))))
+    (destructuring-bind (const . nonconst) (partition expr ivar 1)
+      (if (not $integrate_signum_mode)
+        (cons const nonconst)
+        (let ((const (factors const))
+              (nonconst (factors nonconst))
+              op base expo)
+          (dolist (factor nonconst)
+            (cond
+              ((atom factor))
+              ((setq op (is-safe-signum-or-abs factor))
+                (let ((arg (cadr factor)))
+                  (push (if (eq $integrate_signum_mode '%signum)
+                          (ftake '%signum arg)
+                          (div arg (ftake 'mabs arg)))
+                        const)
+                  (setq nonconst (remove factor nonconst))
+                  (when (eq op 'mabs)
+                    (push arg nonconst))))
+              ((and (mexptp factor)
+                    (integerp (setq expo (caddr factor)))
+                    (setq op (is-safe-signum-or-abs (setq base (cadr factor)))))
+                (let* ((arg (cadr base))
+                       (signum (if (eq $integrate_signum_mode '%signum)
+                                 (ftake '%signum arg)
+                                 (div arg (ftake 'mabs arg)))))
+                  (push (if (evenp expo) (power signum 2) signum) const)
+                  (setq nonconst (remove factor nonconst))
+                  (when (eq op 'mabs)
+                    (push (power arg expo) nonconst))))))
+          (cons (muln const t) (muln nonconst t)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -275,11 +315,12 @@
 	   ;; integrate(sqrt(x+1/x-2),x,0,1).  We were replacing
 	   ;; sqrt((x-1)^2) with x - 1, which is totally wrong since 0 <= x
 	   ;; <= 1.
-	   (setq *exp* (let (($radexpand $radexpand))
-		         (maxima-substitute w (cadr expres) *exp*)))
-	   (intform (let (($radexpand '$all))
-		      (simplify (list '(mexpt) w (caddr expres))))
-                    var2))))
+	   (let ((new-expres (power w (caddr expres))))
+         ;; To prevent endless factoring and expanding, only continue if the
+         ;; new expression is no longer an MEXPT operation.
+         (unless (mexptp new-expres)
+           (setq *exp* (maxima-substitute new-expres expres *exp*))
+           (intform new-expres var2))))))
   ;;------------------------------------------------------------------------------
   
   ;; This is the main integration routine.  It is called from sinint.
@@ -296,7 +337,7 @@
        (if (freevar2 *exp* var2) (return (mul2* *exp* var2)))
      
        ;; Remove constant factors
-       (setq w (partition *exp* var2 1))
+       (setq w (partition-factors *exp* var2))
        (setq const (car w))
        (setq *exp* (cdr w))
        #+nil
@@ -1827,7 +1868,7 @@
 	     (not (free ll var2))
 	     (not (free ul var2)))
 	 (return (list '(%integrate) form var2)))
-     (setq pair (partition expr var2 1))
+     (setq pair (partition-factors expr var2))
      (when (and (mexptp (cdr pair))
 		(eq (caddr pair) var2))
        (setq val (maxima-substitute ll idx (cadddr pair)))
@@ -2461,7 +2502,7 @@
   (setq expr ($factor expr))
 
   ;; Remove constant factors.
-  (setq w (partition expr var2 1))
+  (setq w (partition-factors expr var2))
   (setq const (car w))
   (setq expr (cdr w))
 
