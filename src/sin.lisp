@@ -144,9 +144,7 @@
 			    (b (cdr (assoc 'b z :test #'eq)))
 			    (c (cdr (assoc 'c y :test #'eq)))
 			    (d (cdr (assoc 'd y :test #'eq)))
-		            (newvar (gensym "intform")))
-		        ;; keep var from appearing in questions to user
-		        (putprop newvar t 'internal)
+		            (newvar (make-new-var "intform" expres)))
 		        ;; Substitute y = log(b*x+a) and integrate again
 		        (substint
 		         expres
@@ -766,6 +764,22 @@
 	((not (floatp x)) 1)
 	(t (cdr (maxima-rationalize x)))))
 
+(defun make-new-var (prefix &optional expr)
+  "Generates and prepares a symbol to be used as the new variable when performing
+  a substitution for the expression EXPR. Preparation includes:
+  - adding the 'INTERNAL property (so that no questions are asked about it),
+  - adding an assumption that the new variable is MEQUAL to EXPR, if EXPR is non-NIL,
+  - adding a declaration that the new variable is '$COMPLEX/'$IMAGINARY if EXPR's
+    sign, as determined by $CSIGN, is '$COMPLEX/'$IMAGINARY."
+  (let ((new-var (gensym prefix)))
+    (putprop new-var t 'internal)
+    (assume (list '(mequal) new-var expr))
+    (if expr
+      (let ((expr-sign ($csign expr)))
+        (when (member expr-sign '($complex $imaginary))
+          (declare1 (list new-var) t expr-sign 'kind))))
+    new-var))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Stage II
@@ -783,11 +797,14 @@
       (exptflag nil)) ; When T, the substitution is not possible.
   
   (defun superexpt (expr var2 bas1 pow1)
-    (prog (y ($logabs nil) (new-var (gensym "NEW-VAR-")))
-      (putprop new-var t 'internal)
+    (prog (y ($logabs nil) new-var)
       (setq base bas1
             pow pow1
-            exptflag nil)
+            exptflag nil
+            new-var (make-new-var "superexpt"
+                                  (list '(mexpt) base
+                                          (list '(mplus) (cdras 'a pow)
+                                          (list '(mtimes) (cdras 'b pow) var2)))))
       ;; Transform the integrand. At this point resimplify, because it is not
       ;; guaranteed, that a correct simplified expression is returned.
       ;; Use a new variable to prevent facts on the old variable to be wrongly used.
@@ -914,17 +931,19 @@
      (setq k (apply #'lcm rootlist))
      (setq w1 (cons (cons 'k k) w))
      ;; Substitute for the roots.
+     (let ((new-var (make-new-var "ratroot" (power ratroot2 (power k -1)))))
      (setq y
            (subst41 expr
                     (subliss w1
                              `((mquotient)
                                ((mplus) ((mtimes) b e)
-                                ((mtimes) -1 d ((mexpt) ,var2 k)))
-                               ((mplus) ((mtimes) c ((mexpt) ,var2 k))
+                                ((mtimes) -1 d ((mexpt) ,new-var k)))
+                               ((mplus) ((mtimes) c ((mexpt) ,new-var k))
                                 ((mtimes) -1 e a))))
-                    var2
+                    new-var
                     k
-                    ratroot2))
+                    ratroot2
+                    var2))
      ;; Integrate the new problem.
      (setq y
            (integrator
@@ -934,26 +953,27 @@
                             ((mtimes) e
                              ((mplus)
                               ((mtimes) a d k
-                               ((mexpt) ,var2 ((mplus) -1 k)))
+                               ((mexpt) ,new-var ((mplus) -1 k)))
                               ((mtimes) -1
                                ((mtimes) b c k
-                                ((mexpt) ,var2 ((mplus) -1 k))))))
+                                ((mexpt) ,new-var ((mplus) -1 k))))))
                             ((mexpt) ((mplus)
-                                      ((mtimes) c ((mexpt) ,var2 k))
+                                      ((mtimes) c ((mexpt) ,new-var k))
                                       ((mtimes) -1 a e))
                              2))))
-            var2))
+            new-var))
      ;; Substitute back and return the result.
-     (return (substint (power ratroot2 (power k -1)) var2 y var2 expr))))
+     (return (substint (power ratroot2 (power k -1)) new-var y var2 expr)))))
 
 (let ((rootform nil) ; Expression of the form x = (b*e-d*t^k)/(c*t^k-e*a).
-      (rootvar nil)) ; The variable we substitute for the root.
+      (rootvar nil)  ; The variable we substitute for the root (new-var).
+      (oldvar nil))  ; The original integration variable (var2).
   
   (defun subst4 (ex k ratroot2)
-    (cond ((freevar2 ex rootvar)
-           ;; SUBST4 is called from SUBST41 with ROOTVAR equal to VAR
+    (cond ((freevar2 ex oldvar)
+           ;; SUBST4 is called from SUBST41 with OLDVAR equal to VAR
            ;; (from RATROOT).  Hence we can use FREEVAR2 to see if EX
-           ;; is free of ROOTVAR instead of using FREEVAR.
+           ;; is free of OLDVAR instead of using FREEVAR.
            ex)
           ((atom ex) rootform)
           ((not (eq (caar ex) 'mexpt))
@@ -962,10 +982,12 @@
            (list (car ex) rootvar (integerp2 (timesk k (caddr ex)))))
           (t (list (car ex) (subst4 (cadr ex) k ratroot2) (subst4 (caddr ex) k ratroot2)))))
   
-  (defun subst41 (expr a b k ratroot2)
-    ;; Note:  SUBST41 is only called from RATROOT, and the arg B is VAR.
+  (defun subst41 (expr a b k ratroot2 old-var)
+    ;; Note:  SUBST41 is only called from RATROOT. Arg B is the dummy variable,
+    ;; and OLD-VAR is the original integration variable.
     (setq rootform a
-          rootvar b)
+          rootvar b
+          oldvar old-var)
     ;; At this point resimplify, because it is not guaranteed, that a correct 
     ;; simplified expression is returned.
     (resimplify (subst4 expr k ratroot2)))
@@ -1050,16 +1072,18 @@
 	;;
 	;; a/q*c2^(-r1/q-1/q)*integrate(z^r2*(z-c1)^(r1/q+1/q-1),z)
 	;;
-	(return
+    (let* ((subst-expr (subliss w `((mplus) c1 ((mtimes) c2 ((mexpt) ,var2 q)))))
+           (new-var (make-new-var "chebyf" subst-expr)))
+    (return
 	  (substint
-	   (subliss w `((mplus) c1 ((mtimes) c2 ((mexpt) ,var2 q))))
-	   var2
+	   subst-expr
+	   new-var
 	   (integrator
 	    (expands (list (subliss w
 				    ;; a*t^r2*c2^(-r1-1)
 				    `((mtimes)
 				      a
-				      ((mexpt) ,var2 r2)
+				      ((mexpt) ,new-var r2)
 				      ((mexpt)
 				       c2
 				       ((mtimes)
@@ -1069,12 +1093,12 @@
 		      ;; (t-c1)^r1
 		      (expandexpt (subliss w
 					   `((mplus)
-					     ,var2
+					     ,new-var
 					     ((mtimes) -1 c1)))
 				  r1)))
-	    var2)
+	    new-var)
            var2
-           expr)))
+           expr))))
        ((integerp2 r2)
 	#+nil (format t "integer r2~%")
 	;; I (rtoy) think this is using the substitution z = t^(q/d1).
@@ -1085,14 +1109,16 @@
 	;;
 	;; But be careful because the variable A in the code is
 	;; actually a/q.
-	(return
-	  (substint (subliss w `((mexpt) ,var2 ((mquotient) q d1)))
-		    var2
+	(let* ((subst-expr (subliss w `((mexpt) ,var2 ((mquotient) q d1))))
+           (new-var (make-new-var "chebyf" subst-expr)))
+    (return
+	  (substint subst-expr
+		    new-var
 		    (ratint (simplify (subliss w
 					       `((mtimes)
 						 d1 a
 						 ((mexpt)
-						  ,var2
+						  ,new-var
 						  ((mplus)
 						   n1 d1 -1))
 						 ((mexpt)
@@ -1100,12 +1126,12 @@
 						   ((mtimes)
 						    c2
 						    ((mexpt)
-						     ,var2 d1))
+						     ,new-var d1))
 						   c1)
 						  r2))))
-			    var2)
+			    new-var)
                     var2
-                    expr)))
+                    expr))))
        ((and (integerp2 r1) (< r1 0))
 	#+nil (format t "integer r1 < 0~%")
 	;; I (rtoy) think this is using the substitution
@@ -1117,15 +1143,13 @@
 	;;
 	;;  a/q*c2^(-r1/q-1/q)*d2*
 	;;    integrate(z^(n2+d2-1)*(z^d2-c1)^(r1/q+1/q-1),z)
-	(return
-	  (substint (subliss w
-			     ;; (c1+c2*t^q)^(1/d2)
-			     `((mexpt)
-			       ((mplus)
-				c1
-				((mtimes) c2 ((mexpt) ,var2 q)))
-			       ((mquotient) 1 d2)))
-		    var2
+    (let* ((subst-expr (subliss w `((mexpt)
+                                    ((mplus) c1 ((mtimes) c2 ((mexpt) ,var2 q)))
+                                    ((mquotient) 1 d2))))
+           (new-var (make-new-var "chebyf" subst-expr)))
+    (return
+	  (substint subst-expr
+		    new-var
 		    (ratint (simplify (subliss w
 					       ;; This is essentially
 					       ;; the integrand above,
@@ -1141,18 +1165,18 @@
 						   ((mplus)
 						    r1 1)))
 						 ((mexpt)
-						  ,var2
+						  ,new-var
 						  ((mplus)
 						   n2 d2 -1))
 						 ((mexpt)
 						  ((mplus)
 						   ((mexpt)
-						    ,var2 d2)
+						    ,new-var d2)
 						   ((mtimes) -1 c1))
 						  r1))))
-			    var2)
+			    new-var)
                     var2
-                    expr)))
+                    expr))))
        ((integerp2 (add* r1 r2))
 	#+nil (format t "integer r1+r2~%")
 	;; If we're here,  (r1-q+1)/q+r2 is an integer.
@@ -1166,20 +1190,20 @@
 	;;
 	;; a*d2/q*c1^(r2+r1/q+1/q)*
 	;;   integrate(z^(d2*r2+d2-1)*(z^d2-c2)^(-r2-r1/q-1/q-1),z)
-	(return
-	  (substint (let (($radexpand '$all))
-		      ;; Setting $radexpand to $all here gets rid of
-		      ;; ABS in the substitution.  I think that's ok in
-		      ;; this case.  See Bug 1654183.
-		      (subliss w
-			       `((mexpt)
-				 ((mquotient)
-				  ((mplus)
-				   c1
-				   ((mtimes) c2 ((mexpt) ,var2 q)))
-				  ((mexpt) ,var2 q))
-				 ((mquotient) 1 d1))))
-		    var2
+    (let* ((subst-expr
+             (let (($radexpand '$all))
+               ;; Setting $radexpand to $all here gets rid of
+               ;; ABS in the substitution.  I think that's ok in
+               ;; this case.  See Bug 1654183.
+               (subliss w `((mexpt)
+                            ((mquotient)
+                             ((mplus) c1 ((mtimes) c2 ((mexpt) ,var2 q)))
+                             ((mexpt) ,var2 q))
+                            ((mquotient) 1 d1)))))
+           (new-var (make-new-var "chebyf" subst-expr)))
+    (return
+	  (substint subst-expr
+		    new-var
 		    (ratint (simplify (subliss w
 					       `((mtimes)
 						 -1 a d1
@@ -1188,13 +1212,13 @@
 						  ((mplus)
 						   r1 r2 1))
 						 ((mexpt)
-						  ,var2
+						  ,new-var
 						  ((mplus)
 						   n2 d1 -1))
 						 ((mexpt)
 						  ((mplus)
 						   ((mexpt)
-						    ,var2 d1)
+						    ,new-var d1)
 						   ((mtimes)
 						    -1 c2))
 						  ((mtimes)
@@ -1202,9 +1226,9 @@
 						   ((mplus)
 						    r1 r2
 						    2))))))
-			    var2)
+			    new-var)
                     var2
-                    expr)))
+                    expr))))
        (t (return (list '(%integrate) expr var2))))))
 
 (defun greaterratp (x1 x2)
@@ -1571,15 +1595,17 @@
      
      (setq m (cdras 'm z))
      (setq n (cdras 'n z))
-     (let ((aa (integerp2 (* 0.5 (if (< m n) 1 -1) (+ n (* -1 m))))))
+     (let* ((aa (integerp2 (* 0.5 (if (< m n) 1 -1) (+ n (* -1 m)))))
+            (subst-expr (mul 2 var2))
+            (new-var (make-new-var "trigint" subst-expr)))
        (setq z (cons (cons 'a aa) z))
-       (setq z (cons (cons 'x var2) z))
+       (setq z (cons (cons 'x new-var) z))
      
        (when *debug-integrate*
          (format t "~& CASE III:~%")
          (format t "~&   : m, n = ~A ~A~%" m n)
          (format t "~&   : a    = ~A~%" aa)
-         (format t "~&   : z    = ~A~%" z)))
+         (format t "~&   : z    = ~A~%" z))
      
      ;; integrate(sin(y)^m*cos(y)^n,y) is transformed to the following form:
      ;;
@@ -1589,8 +1615,8 @@
        (mul (cdras 'b z)
             (div 1 2)
             (substint 
-              (mul 2 var2)
-              var2
+              subst-expr
+              new-var
               (integrator 
                 (cond ((< m n)
                        (subliss z
@@ -1615,9 +1641,9 @@
                                     ((mtimes)
                                      ((rat simp) -1 2) 
                                      ((%cos) x))) a)))))
-                var2)
+                new-var)
               var2
-              expr)))
+              expr))))
   l1 
      ;; Case IV:
      ;; I think this is case IV, working on the expression in terms of
@@ -1696,7 +1722,7 @@
        ;; Do not integrate for the global variable VAR, but substitute it.
        ;; This way possible assumptions on VAR are no longer present. The
        ;; algorithm of DEFINT depends on this behavior. See Bug 3085498.
-       (let (($triginverses '$all) (newvar (gensym)))
+       (let (($triginverses '$all) (newvar (make-new-var "trigint" repl)))
          (substint repl
                    newvar
                    (integrator (maxima-substitute newvar 'x y) newvar)
@@ -1730,7 +1756,7 @@
       ;; with an atomic gensym and recurse.
       ((and (not (atom var2))
             (member 'array (cdar var2)))
-       (let ((dummy-var2 (gensym)))
+       (let ((dummy-var2 (make-new-var "sinint" var2)))
          (maxima-substitute var2 dummy-var2
                             (sinint (maxima-substitute dummy-var2 var2 expr) dummy-var2))))
 
