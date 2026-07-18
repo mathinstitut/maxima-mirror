@@ -808,7 +808,7 @@
       ;; Transform the integrand. At this point resimplify, because it is not
       ;; guaranteed, that a correct simplified expression is returned.
       ;; Use a new variable to prevent facts on the old variable to be wrongly used.
-      (setq y (resimplify (maxima-substitute new-var var2 (elemxpt expr var2))))
+      (setq y (resimplify (elemxpt expr var2 new-var)))
       (when exptflag (return nil))
       ;; Integrate the transformed integrand and substitute back.
       (return
@@ -827,19 +827,19 @@
   
   ;; Transform expressions like g^(b*x+a) to the common base base and
   ;; do the substitution y = base^(b*x+a) in the expr.
-  (defun elemxpt (expr var2 &aux w)
+  (defun elemxpt (expr var2 new-var &aux w)
     (cond ((freevar2 expr var2) expr)
           ;; var2 is the base of a subexpression. The transformation fails.
           ((atom expr) (setq exptflag t))
           ((not (eq (caar expr) 'mexpt))
            (cons (car expr)
                  (mapcar #'(lambda (c)
-                             (elemxpt c var2))
+                             (elemxpt c var2 new-var))
                          (cdr expr))))
           ((not (freevar2 (cadr expr) var2))
            (list '(mexpt)
-                 (elemxpt (cadr expr) var2)
-                 (elemxpt (caddr expr) var2)))
+                 (elemxpt (cadr expr) var2 new-var)
+                 (elemxpt (caddr expr) var2 new-var)))
           ;; Transform the expression to the common base.
           ((not (eq (cadr expr) base))
            (elemxpt (list '(mexpt)
@@ -847,23 +847,24 @@
                           (mul (power (take '(%log) base) -1)
                                (take '(%log) (cadr expr))
                                (caddr expr)))
-                    var2))
+                    var2
+                    new-var))
           ;; The exponent must be linear in the variable of integration.
           ((not (setq w (m2-b*x+a (caddr expr) var2)))
-           (list (car expr) base (elemxpt (caddr expr) var2)))
+           (list (car expr) base (elemxpt (caddr expr) var2 new-var)))
           ;; Do the substitution y = g^(b*x+a).
           (t
            (setq w (cons (cons 'bb (cdras 'b pow)) w))
            (setq w (cons (cons 'aa (cdras 'a pow)) w))
            (setq w (cons (cons 'base base) w))
-           (subliss w '((mtimes)
+           (subliss w `((mtimes)
                         ((mexpt) base a)
                         ((mexpt)
                          base
                          ((mquotient)
                           ((mtimes) -1 aa b) bb))
                         ((mexpt)
-                         x
+                         ,new-var
                          ((mquotient) b bb)))))))
 ) ; End of let
 
@@ -1450,14 +1451,15 @@
                                            (supersinx (cdras 'n y)))))))
          var2))
   a  ;; A product of trig functions and all trig functions have the same
-     ;; argument trigarg. Maxima substitutes trigarg with the variable var2
+     ;; argument trigarg. Maxima substitutes trigarg with a new variable
      ;; of integration and calls trigint to integrate the new problem.
-     (setq w (subst2s expr trigarg var2))
+     (let ((new-var (make-new-var "monstertrig" trigarg)))
+     (setq w (subst2s expr trigarg new-var))
      (setq b (cdras 'b (m2-b*x+a trigarg var2)))
-     (setq a (substint trigarg var2 (trigint (div* w b) var2) var2 expr))
+     (setq a (substint trigarg new-var (trigint (div* w b) new-var) var2 expr))
      (return (if (isinop a '%integrate)
                  (list '(%integrate) expr var2)
-                 a))))
+                 a)))))
 
 (defun trig2 (x)
   (member (car x) '(%sin %cos %tan %cot %sec %csc) :test #'eq))
@@ -1982,13 +1984,13 @@
 ;; possibly a bug: For var2 = x and dd =3, we have expand(?subst10(x^9 * (x+x^6))) --> x^5+x^4, but
 ;; ?subst10(expand(x^9 * (x+x^6))) --> x^5+x^3. (Barton Willis)
 
-(defun subst10 (ex var2 dd)
+(defun subst10 (ex var2 dd new-var)
   (cond ((atom ex) ex)
 	((and (eq (caar ex) 'mexpt) (eq (cadr ex) var2))
-	 (list '(mexpt) var2 (integerp2 (quotient (caddr ex) dd))))
+	 (list '(mexpt) new-var (integerp2 (quotient (caddr ex) dd))))
 	(t (cons (remove 'simp (car ex))
 		 (mapcar #'(lambda (c)
-                             (subst10 c var2 dd))
+                             (subst10 c var2 dd new-var))
                          (cdr ex))))))
 
 (defun powerlist (expr var2)
@@ -2020,18 +2022,20 @@
        (unless  (rat10 bb) (return nil))
        (setq dd (apply #'gcd (cons (1+ cc) power-list))))
      (when (or (eql 1 dd) (zerop dd)) (return nil))
-     (return
-       (substint
-	(list '(mexpt) var2 dd)
-	var2
-	(integrate5 (simplify (list '(mtimes)
-				    (power* dd -1)
-				    (cdr (assoc 'a y :test #'eq))
-				    (list '(mexpt) var2 (1- (quotient (1+ cc) dd)))
-				    (subst10 bb var2 dd)))
-		    var2)
-        var2
-        expr))))
+     (let* ((subst-expr (list '(mexpt) var2 dd))
+            (new-var (make-new-var "powerlist" subst-expr)))
+       (return
+         (substint
+          subst-expr
+          new-var
+          (integrate5 (simplify (list '(mtimes)
+                                      (power* dd -1)
+                                      (cdr (assoc 'a y :test #'eq))
+                                      (list '(mexpt) new-var (1- (quotient (1+ cc) dd)))
+                                      (subst10 bb var2 dd new-var)))
+                      new-var)
+          var2
+          expr)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
