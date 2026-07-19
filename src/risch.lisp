@@ -212,13 +212,21 @@
     (let ((rischp risch-var)
 	  (rp-polylogp t)
 	  $logarc $exponentialize result)
+     ;; Split into real and imaginary part. This automatically converts back to
+     ;; trigonometric functions, which were converted to exponential form before.
      (destructuring-let (((yyy-re . yyy-im) (risplit yyy)))
-      (setq result (sratsimp (if (and (freeof '$%i risch-*exp) (freeof '$li yyy)
-                                      ;; Don't strip away the imaginary part if
-                                      ;; it contains unsolved integrals!
-                                      (not (isinop yyy-im '%integrate)))
-                                 yyy-re
-                                 (add yyy-re (mul '$%i yyy-im))))))
+      (flet ((locally-const-p (e)
+        "E is locally constant iff its derivative vanishes."
+        (let ((e (let (($exponentialize t) ($logarc t))
+                   (radcan1 (resimplify e) risch-var))))
+          (or (freeof risch-var e)
+              (zerop1 (radcan1 (sdiff e risch-var) risch-var))))))
+      ;; Strip locally constant parts (unsolved integrals survive this).
+      ;; ERRCATCH: In case of an error (occurs during test suite, treat the part
+      ;; as non-constant - keeping is always safe, dropping is not.
+      (let ((yyy-re (if (car (errcatch (locally-const-p yyy-re))) 0 yyy-re))
+            (yyy-im (if (car (errcatch (locally-const-p yyy-im))) 0 yyy-im)))
+      (setq result (sratsimp (add yyy-re (mul '$%i yyy-im)))))))
       ;; The result can contain solvable integrals. Look for this case.
       (if (isinop result '%integrate)
           ;; Found an integral. Evaluate the result again.

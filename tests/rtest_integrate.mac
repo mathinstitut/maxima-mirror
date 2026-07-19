@@ -6532,3 +6532,10 @@ block(
   is(freeof(%i, d) and abs(d - 0.7277579150809212) < 1e-10)
 );
 true;
+
+
+/* Bug #4810: "risch(sqrt(sin(x)^2-1),x) = 0"
+   Note: %i*abs(sin(x)) would be better! */
+
+risch(sqrt(sin(x)^2 - 1), x);
+%i*sin(x);
