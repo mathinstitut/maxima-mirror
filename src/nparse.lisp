@@ -69,10 +69,23 @@
 (defmvar $report_synerr_line t "If T, report line number where syntax error occurs; otherwise, report FILE-POSITION of error.")
 (defmvar $report_synerr_info t "If T, report the syntax error details from all sources; otherwise, only report details from standard-input.")
 
+;; Maxima lets us refer to a Lisp symbol by prefixing it with "?", e.g. "?foo".
+;; To make that work, DBM-READ consumes the leading "?" and then hands the
+;; parser the input wrapped like
+;; (make-concatenated-stream (make-string-input-stream "?") *standard-input*)
+;; so *PARSE-STREAM* is no longer EQ to *STANDARD-INPUT*, even though the input
+;; still comes from the interactive terminal. FILE-POSITION is meaningless for
+;; terminal input, and on SBCL querying it on this wrapper even signals a Lisp
+;; error. Therefore, recognize such a wrapper and treat it like *STANDARD-INPUT*.
+(defun parse-stream-standard-input-p (stream)
+  (or (eq stream *standard-input*)
+      (and (typep stream 'concatenated-stream)
+           (member *standard-input* (concatenated-stream-streams stream)))))
+
 (defun mread-synerr (format-string &rest l)
-  (let ((fp (and (not (eq *parse-stream* *standard-input*))
+  (let ((fp (and (not (parse-stream-standard-input-p *parse-stream*))
                  (file-position *parse-stream*)))
-	(file (and (not (eq *parse-stream* *standard-input*))
+	(file (and (not (parse-stream-standard-input-p *parse-stream*))
                    (cadr *current-line-info*)))
 	(*standard-output* *error-output*))
     (flet ((line-number ()
@@ -121,7 +134,7 @@
 	 (format t "~&~:[~;~:*~a:~a:~]" file fp)))
       (format t (intl:gettext "incorrect syntax: "))
       (apply 'format t format-string (mapcar #'printer l))
-      (cond ((or $report_synerr_info (eql *parse-stream* *standard-input*))
+      (cond ((or $report_synerr_info (parse-stream-standard-input-p *parse-stream*))
 	     (let ((some (column)))
 	       (format t "~%~{~c~}~%~vt^" some (max 0 (- (length some) 2)))
 	       (read-line *parse-stream* nil nil))))
