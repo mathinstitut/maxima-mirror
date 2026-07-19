@@ -1483,6 +1483,17 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
       (setq sign (flip sign)))
     retval))
 
+(defun expt-of-base (expr q)
+  "If EXPR is a power of base Q (or EXPR = Q, then the exponent is implicitly 1),
+  returns the exponent (1 or k). Otherwise returns NIL.
+  Equality of EXPR's base and Q or EXPR and Q is checked via MEQP."
+  (let ($ratprint)
+    (if (mexptp expr)
+      (if (eq t (meqp (cadr expr) q))
+        (caddr expr))
+      (if (eq t (meqp expr q))
+        1))))
+
 (defun signdiff-special (xlhs xrhs)
   ;; xlhs may be a constant
   (let ((sgn nil) flip-sign)
@@ -1497,16 +1508,22 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 			(member (sign* (sub 1 xrhs)) '($pos $zero $pz) :test #'eq)
 			(eq (sign* (sub (cadr xlhs) 1)) '$pos))
 		       (and (not (eq $domain '$complex))
-			;; Qpos ^ Rpos - Spos => Qpos - Spos^(1/Rpos)
+			;; Qpos ^ Rpos - Spos => Qpos - Spos^(1/Rpos).
+			;; Do NOT apply when Spos is itself a power of Qpos (e.g. S = Q):
+			;; The reduction would just toggle the exponent R <-> 1/R and recurse forever.
+			;; That same-base case is handled by the exponent-comparison rule further below.
+			(not (expt-of-base xrhs (cadr xlhs)))
 			(eq (sign* (cadr xlhs)) '$pos)
 			(eq (sign* xrhs) '$pos)
 			(eq (sign* (sub (cadr xlhs)
 					(power xrhs (div 1 (caddr xlhs)))))
 			    '$pos))))
 	      (and (mexptp xlhs) (mexptp xrhs)
-		   ;; Q^R - Q^T, Q>1, (R-T) > 0
+		   ;; Q^R - Q^T, Q>1, (R-T) > 0, with real R and T
 		   ;; e.g. sign(2^x-2^y) where x>y
 		   (alike1 (cadr xlhs) (cadr xrhs))
+		   (zerop1 ($imagpart (caddr xlhs)))
+		   (zerop1 ($imagpart (caddr xrhs)))
 		   (eq (sign* (sub (cadr xlhs) 1)) '$pos)
 		   (eq (sign* (sub (caddr xlhs) (caddr xrhs))) '$pos)))
       (setq sgn '$pos))
@@ -1606,6 +1623,26 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
         (when (not (eq diff-sign '$pnz))
           (setq sgn diff-sign))))
     
+    ;; sign(Q^m - Q^n) for Q > 0 and real m, n, treating a bare base B as B^1.
+    ;;     Q > 1 => sign(m - n),
+    ;; 0 < Q < 1 => sign(n - m).
+    ;; Resolves e.g. sign(x^a - x) = pos for x > 1, a > 1, and always terminates.
+    (when (null sgn)
+      (let ((q (cond ((mexptp xlhs) (cadr xlhs))
+                     ((mexptp xrhs) (cadr xrhs)))))
+        (when q
+          (let ((m (expt-of-base xlhs q))
+                (n (expt-of-base xrhs q)))
+            (when (and m n
+                       (zerop1 ($imagpart m))
+                       (zerop1 ($imagpart n)))
+              (let* ((qcmp (and (eq (sign* q) '$pos) (sign* (sub q 1))))
+                     (diff-sign (cond ((eq qcmp '$pos) (sign* (sub m n)))
+                                      ((eq qcmp '$neg) (sign* (sub n m)))
+                                      (t '$pnz))))
+                (unless (eq diff-sign '$pnz)
+                  (setq sgn diff-sign))))))))
+
     (when (and $useminmax (or (minmaxp xlhs) (minmaxp xrhs)))
       (setq sgn (signdiff-minmax xlhs xrhs)))
     (when sgn (setq sign (if flip-sign (flip sgn) sgn) minus nil odds nil evens nil)

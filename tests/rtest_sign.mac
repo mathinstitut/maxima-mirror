@@ -1697,3 +1697,117 @@ imaginary;
 
 (forget(equal(c, 0)), remove(j, imaginary));
 done;
+
+
+/* Bug #4318: "is(x^a > x) with x > 1 & a > 1 gives stack overflow exception" */
+
+(assume(x > 1, a > 1), 0);
+0;
+
+sign(x^a - x);
+pos;
+
+sign(x - x^a);
+neg;
+
+sign(x^(1/a) - x);
+neg;
+
+sign(x - x^(1/a));
+pos;
+
+(forget(x > 1, a > 1), 0);
+0;
+
+
+/* some more cases related to the fix of #4318 */
+
+(assume(x > 1, a < b), 0);
+0;
+
+sign(x^a - x^b);
+neg;
+
+(forget(x > 1, a < b),
+ assume(a > 1), 0);
+0;
+
+sign(2^a - 2);
+pos;
+
+sign(2 - 2^a);
+neg;
+
+(forget(a > 1),
+ assume(c > 0, c < 1, a > 1), 0);
+0;
+
+sign(c^a - c);
+neg;
+
+sign(c - c^a);
+pos;
+
+(forget(c > 0, c < 1, a > 1),
+ assume(x > 1, a >= 1), 0);
+0;
+
+sign(x^a - x);
+pz;
+
+(forget(a >= 1),
+ assume(a <= 1), 0);
+0;
+
+sign(x^a - x);
+nz;
+
+(forget(x > 1, a <= 1),
+ assume(a > 1), 0);
+0;
+
+sign(x^a - x);
+pnz;
+
+(forget(a > 1),
+ assume(bb > 1), 0);
+0;
+
+csign(bb^(2 + %i) - bb^(1 + %i));
+complex;
+
+(forget(bb > 1),
+ assume(cc > 0, cc < 1), 0);
+0;
+
+csign(cc^(2 + %i) - cc^(1 + %i));
+complex;
+
+(forget(cc > 0, cc < 1),
+ assume(s > t), 0);
+0;
+
+sign(2^s - 2^t);
+pos;
+
+(forget(s > t),
+ assume(w > 0), 0);
+0;
+
+sign(%e^w - 1);
+pos;
+
+(forget(w > 0),
+ assume(x > 1, a < b, equal(y, x)), 0);
+0;
+
+sign(x^a - y^b);
+neg;
+
+(forget(x > 1, a < b, equal(y, x)), 0);
+0;
+
+
+/* Leave this at the end of the file! */
+[facts(), contexts];
+[[], [initial, global]];
