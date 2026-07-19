@@ -155,6 +155,7 @@ Bug fixes for unnumbered bugs:
 * fr1 early exit incorrect for symbols when $algebraic or $ratwtlvl is set
 * featurep((-1)^n, integer) returning false for n declared integer
 * antiderivative of acoth(x) not respecting logabs
+* ultraspherical(1, -1/2, x) causes division by zero error
 
 Changes in the Windows installer:
 ---------------------------------

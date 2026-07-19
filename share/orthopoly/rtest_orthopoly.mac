@@ -1978,3 +1978,9 @@ subst(x=23/10, hermite(5,x));
 
 jacobi_p(5, -1, 1/2, x);
 (46189*x^5-36465*x^4-41470*x^3+27742*x^2+6369*x-2365)/8192;
+
+
+/* similar bug for ultraspherical */
+
+ultraspherical(1, -1/2, x);
+-x;

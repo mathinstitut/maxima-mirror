@@ -436,9 +436,19 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
    (dimension-sub-and-super-scripted-function '|$p| `(1) `(2 3) t 4 form)
    result))
      	  
-;; See A&S 22.5.46, page 779.
-
 (defun $ultraspherical (n a x)
+  ;; The 2F1 form (A&S 22.5.46) has denominator parameter c = a + 1/2. For a in
+  ;; {-1/2, -3/2, ..., -(2*n-1)/2}, i.e. c in {0, -1, ..., 1-n}, the factor
+  ;; (a + 1/2 + k) vanishes in a denominator of the unsimplified expression.
+  ;; Evaluate with a gensym in place of a so the removable singularity cancels,
+  ;; then substitute a back.
+  (let ((c (add a (div 1 2))))
+    (if (and (integerp n) (integerp c) (<= (- 1 n) c) (<= c 0))
+      (let ((a-gensym (gensym "a")))
+        ($ratsimp ($substitute a a-gensym ($ratsimp (ultraspherical-1 n a-gensym x)))))
+      (ultraspherical-1 n a x))))
+
+(defun ultraspherical-1 (n a x)
   (cond ((use-hypergeo n x)
 	 (let ((f) (d) (e))
 	   ;(setq d (div ($pochhammer (mul 2 a) n) ($pochhammer 1 n)))
