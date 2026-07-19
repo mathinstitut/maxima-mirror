@@ -142,6 +142,7 @@ Bug fixes for numbered bugs:
  * \#4820 integrate(1/sqrt(x^2+2*x+1), x) & similar wrong
  * \#4821 integrate(sec(x)*tan(x)^3.0, x) is wrong
  * \#4824 sinint substitutes without changing the variable, letting facts from the original variable intact
+ * \#4826 division by zero computing a Jacobi polynomial
 
 Bug fixes for unnumbered bugs:
 -----------------------------

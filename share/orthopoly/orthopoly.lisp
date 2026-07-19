@@ -385,6 +385,13 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 ;; O(eps^2). 
 
 (defun $jacobi_p (n a b x)
+  (if (and (integerp a) (integerp n) (<= (- n) a) (< a 0))
+    ;; For (- n) <= a < 0, avoid problems with (a + k) in denominator of unsimplified expression.
+    (let ((a-gensym (gensym "a")))
+      ($ratsimp ($substitute a a-gensym ($ratsimp (jacobi_p-1 n a-gensym b x)))))
+    (jacobi_p-1 n a b x)))
+
+(defun jacobi_p-1 (n a b x)
   (cond ((use-hypergeo n x)
 	 (let ((f) (d) (e))
 	   ;(setq d (div ($pochhammer (add a 1) n) ($pochhammer 1 n)))

@@ -1972,3 +1972,9 @@ hermite(5,23/10);
 
 subst(x=23/10, hermite(5,x));
 1215343/3125$
+
+
+/* Bug #4826: "division by zero computing a Jacobi polynomial" */
+
+jacobi_p(5, -1, 1/2, x);
+(46189*x^5-36465*x^4-41470*x^3+27742*x^2+6369*x-2365)/8192;
