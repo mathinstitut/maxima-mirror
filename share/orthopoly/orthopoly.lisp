@@ -109,7 +109,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 	   (setq p ($expand (mult x p)))
 	   (setq q ($expand (mult x (add q (simplify `((mabs) ,(mul p dx)))))))
 	   (setq q (simplify `((mabs) ,q)))
-	   `(($interval) ,p ,q)))
+	   `(($interval simp) ,p ,q)))
 	(t (mult x a))))
 	   
 ;; TeX a function with subscripts and superscripts.  The string fn is the
@@ -814,7 +814,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 		  (setq d (mul (if (oddp n) -1 1) (factorial (+ 1 (* 2 n))) 2 x
 			       (div 1 (factorial n))))))
 	   (orthopoly-return-handler d f e))) 
-	(t `(($hermite) ,n ,x))))
+	(t `(($hermite simp) ,n ,x))))
 
 (putprop '$hermite
 	 '((n x)
@@ -854,7 +854,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 	   (setq e (if e (+ e (* 4 (abs f) +flonum-epsilon+ n)) nil))
 	   (orthopoly-return-handler d f e)))
 	(t
-	 `(($gen_laguerre) ,n ,a ,x))))
+	 `(($gen_laguerre simp) ,n ,a ,x))))
 
 (putprop '$gen_laguerre
 	 '((n a x)
@@ -888,7 +888,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 	   (multiple-value-setq (f e) ($hypergeo11 (mul -1 n) 1 x n))
 	   (orthopoly-return-handler 1 f e)))
 	(t
-	 `(($laguerre) ,n ,x))))
+	 `(($laguerre simp) ,n ,x))))
 
 (putprop '$laguerre
 	 '((n x)
@@ -928,7 +928,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 			(power '$%e (mul '$%i x)) (div -1 (power x (add 1 n)))))
 	   (orthopoly-return-handler d f e))
 	  (t 
-	   `(($spherical_hankel1) ,n ,x)))))
+	   `(($spherical_hankel1 simp) ,n ,x)))))
 
 (putprop '$spherical_hankel1
 	 '((n x)
@@ -958,7 +958,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 	 (let ((f))
 	   (setq f ($spherical_hankel1 n x))
 	   (if (oddp n) (interval-mult -1 f) f)))
-	(t `(($spherical_hankel2) ,n ,x))))
+	(t `(($spherical_hankel2 simp) ,n ,x))))
 
 (putprop '$spherical_hankel2
 	 '((n x)
@@ -1051,7 +1051,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 	 (mul (if (oddp n) -1 1) ($spherical_bessel_y (- (+ n 1)) x)))
 
 	(t 
-	 `(($spherical_bessel_j) ,n ,x))))
+	 `(($spherical_bessel_j simp) ,n ,x))))
 	 
 (putprop '$spherical_bessel_j
 	 '((n x)
@@ -1101,7 +1101,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 
 	((integerp n)
 	 (mul (if (oddp n) 1 -1) ($spherical_bessel_j (- (+ n 1)) x)))
-	(t  `(($spherical_bessel_y) ,n ,x))))
+	(t  `(($spherical_bessel_y simp) ,n ,x))))
 
 (putprop '$spherical_bessel_y
 	 '((n x)
@@ -1153,7 +1153,7 @@ Maxima code for evaluating orthogonal polynomials listed in Chapter 22 of Abramo
 			     `((rat) 1 2)))
 		 (assoc-leg-cos n m th)))))
 	(t
-	 `(($spherical_harmonic) ,n ,m ,th ,p))))
+	 `(($spherical_harmonic simp) ,n ,m ,th ,p))))
 
 (defprop $spherical_harmonic tex-spherical-harmonic tex)
 
