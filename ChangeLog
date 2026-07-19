@@ -134,6 +134,7 @@ Bug fixes for numbered bugs:
  * \#4800 zeroa, zerob are listed by listofvars
  * \#4803 limit(1+zerob), numer : true vs limit(1+zeroa), numer : true;
  * \#4806 Taylor: bad singular datum
+ * \#4808 ?a(; causes Lisp error
  * \#4809 integrate(sqrt(x^2+x^3),x,-1,1) asks for the sign of x
  * \#4810 risch(sqrt(sin(x)^2-1),x) = 0
  * \#4814 Default GCD algorithm can't handle algebraic
