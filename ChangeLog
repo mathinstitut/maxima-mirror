@@ -132,6 +132,7 @@ Bug fixes for numbered bugs:
  * \#4799 taylor contagion
  * \#4801 Bogus derivatives when arguments match variable names in DEFGRAD
  * \#4800 zeroa, zerob are listed by listofvars
+ * \#4803 limit(1+zerob), numer : true vs limit(1+zeroa), numer : true;
  * \#4806 Taylor: bad singular datum
  * \#4809 integrate(sqrt(x^2+x^3),x,-1,1) asks for the sign of x
  * \#4810 risch(sqrt(sin(x)^2-1),x) = 0
