@@ -720,3 +720,14 @@ atan2(-2*cos(x), 2*sin(x)), triginverses : all;
 x - %pi/2;
 atan2(-2*cos(x), -2*sin(x)), triginverses : all;
 -x - %pi/2;
+
+
+/* csc(x) and sec(x) are never zero, so acsc(0) and asec(0) lie outside
+ * the range of csc/sec and must signal a domain error, just as acsch(0)
+ * and asech(0) do. */
+
+block([errormsg: false], errcatch(acsc(0)));
+[];
+
+block([errormsg: false], errcatch(asec(0)));
+[];

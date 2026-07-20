@@ -269,7 +269,8 @@
 	((and (not (member 'simp (car form))) (big-float-eval (mop form) y)))
 	((taylorize (mop form) (second form)))
         ((and $%piargs
-              (cond ((equal 1 y) (div '$%pi 2))
+              (cond ((zerop1 y) (domain-error y 'acsc))
+                    ((equal 1 y) (div '$%pi 2))
                     ((equal -1 y) (div '$%pi -2))
                     ((equal y 2) (div '$%pi 6))
                     ;; sqrt(2)
@@ -296,7 +297,8 @@
 	((and (not (member 'simp (car form))) (big-float-eval (mop form) y)))
 	((taylorize (mop form) (second form)))
         ((and $%piargs 
-              (cond ((equal 1 y) 0) 
+              (cond ((zerop1 y) (domain-error y 'asec))
+                    ((equal 1 y) 0) 
                     ((equal -1 y) '$%pi)
                     ((equal 2 y) (div '$%pi 3))
                     ;; sqrt(2)
