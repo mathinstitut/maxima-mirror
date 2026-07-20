@@ -289,7 +289,7 @@ L = ((A_1 ... A_N) (B_1 ... B_N) (C_1 ... C_N) ...), returns a list
 (defun cnthroot(c n)
   (cond ((minusp c)
 	 (cond ((oddp n) (- (cnthroot (- c) n)))
-	       (t (rat-error "cnthroot error (should have been caught"))))
+	       (t (rat-error "cnthroot error (should have been caught)"))))
 	((zerop c) c)
 	((zerop (cadr (setq c (iroot c n)))) (car c))
 	(t (rat-error "cnthroot error2 (should have been caught"))))
