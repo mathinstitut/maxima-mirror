@@ -150,6 +150,7 @@ Bug fixes for numbered bugs:
  * \#4824 sinint substitutes without changing the variable, letting facts from the original variable intact
  * \#4826 division by zero computing a Jacobi polynomial
  * \#4827 integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf) gives negative value
+ * \#4828 Change of variable takes the wrong root / doubles without checking parity - wrong answers
 
 Bug fixes for unnumbered bugs:
 -----------------------------

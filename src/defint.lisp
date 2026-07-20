@@ -331,6 +331,37 @@ in the interval of integration.")
 	 (out2 (no-err-sub-var out1 fun2 var2)))
     (alike1 val out2)))
 
+;; Given ROOT = ((yx-a)/b)^(1/n), one root of yx = b*x^n+a, return a root
+;; of that equation that is usable for the change of variable on the
+;; integration interval [ll, ul]: a root that actually inverts NV on the
+;; whole interval (for even N, -ROOT is a root as well), or, when no
+;; single branch does, ROOT itself if INTCV2 may halve the symmetric
+;; interval and double - which is valid only if the integrand (EXP)
+;; is an even function, too. Otherwise, return NIL.
+;; Picking ROOT blindly gave wrong results, e.g. with domain : complex for
+;; integrate((x+1)*log(x^2),x,-2,-1) (wrong branch of sqrt) and
+;; integrate((x+1)*log(x^2),x,-1,1) (doubling of a non-even integrand).
+(defun intcv-root (nv ivar root n ll ul)
+  (flet ((inversep (r)
+           ;; R (an expression in 'YX) must invert NV at both finite
+           ;; endpoints of the integration interval.
+           (and (or (real-infinityp ll)
+                    (test-inverse nv ivar r 'yx ll))
+                (or (real-infinityp ul)
+                    (test-inverse nv ivar r 'yx ul)))))
+    (cond
+      ((inversep root) root)
+      ((and (integerp n) (evenp n)
+            (inversep (neg root)))
+        (neg root))
+      ;; The doubling case: This must use the + branch. With -ROOT,
+      ;; the transformed integrand changes sign, while the halved
+      ;; limits of integration stay the same.
+      ((and (zerop1 (m+ ll ul))
+            (evenfn nv ivar)
+            (evenfn exp ivar))
+        root))))
+
 ;; integration change of variable
 (defun intcv (nv flag ivar ll ul)
   (let ((d (bx**n+a nv ivar))
@@ -346,16 +377,15 @@ in the interval of integration.")
 	   ;; Why?  Because solve asks us for the sign of yx and
 	   ;; that's bogus.
 	   (cond (d
-		  ;; Solve yx = b*x^n+a, for x.  Any root will do.  So we
-		  ;; have x = ((yx-a)/b)^(1/n).
+		  ;; Solve yx = b*x^n+a, for x. This gives one root,
+		  ;; x = ((yx-a)/b)^(1/n); INTCV-ROOT picks a usable root, if any.
 		  (destructuring-bind (a n b)
 		      d
 		    (let ((root (power* (div (sub 'yx a) b) (inv n))))
-		      (cond (t
-			     (setq d root)
+		      (when (setq d (intcv-root nv ivar root n ll ul))
 			     (cond (flag (intcv2 d nv ivar ll ul))
 				   (t (intcv1 d nv ivar ll ul))))
-			    ))))
+			    )))
 		 (t
 		  (putprop 'yx t 'internal);; keep ivar from appearing in questions to user
 		  (solve (m+t 'yx (m*t -1 nv)) ivar 1.)
@@ -395,7 +425,10 @@ in the interval of integration.")
     (let ((exp-yx (intcv3 d nv ivar))
           ll1 ul1)
       (and (cond ((and (zerop1 (m+ ll ul))
-		       (evenfn nv ivar))
+		       (evenfn nv ivar)
+		       ;; halving the symmetric interval and doubling
+		       ;; is only valid for an even integrand
+		       (evenfn exp ivar))
 	          (setq exp-yx (m* 2 exp-yx)
 		        ll1 (limcp nv ivar 0 '$plus)))
 	         (t (setq ll1 (limcp nv ivar ll '$plus))))

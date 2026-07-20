@@ -6546,3 +6546,21 @@ risch(sqrt(sin(x)^2 - 1), x);
 
 integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf);
 'integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf);
+
+
+/* Bug #4828: "Change of variable takes the wrong root / doubles without checking parity - wrong answers" */
+
+integrate((x + 1) * log(x^2), x, -1, 1), domain : complex;
+-4;
+
+integrate((x + 1) * log(x^2), x, -2, -1), domain : complex;
+-1/2;
+
+integrate((x + 1) * log(x^2), x, -1, 2), domain : complex;
+8*log(2)-15/2;
+
+integrate(log(x^2), x, -1, 1), domain : complex;
+-4;
+
+integrate(log(x^2) / sqrt(1 - x^2), x, -1, 1), domain : complex;
+-2*%pi*log(2);
