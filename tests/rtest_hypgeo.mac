@@ -2201,6 +2201,19 @@ s^((-z)-1)*gamma(z+1);
  0);
 0;
 
+
+/* Bug #4823: "specint asks the sign of a silent variable" */
+
+(assume(s > 0), declare(n, integer), 0);
+0;
+
+niceindices(specint(exp(-s * x) * laguerre(n, x), x));
+'sum((gamma(i+1)*pochhammer(-n,i)*s^(-i-1))/i!^2,i,0,n);
+
+(forget(s > 0), remove(n, integer), 0);
+0;
+
+
 kill(all);
 done;
  

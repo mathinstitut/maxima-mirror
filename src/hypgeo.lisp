@@ -1308,12 +1308,16 @@
   (let (l a)
     (cond ((setq l (m2-sum u *hypgeo-var*))
 	   ;; We have found a summation.
+       ;; Temporarily assume lo <= summation index <= hi so that
+       ;; Maxima doesn't ask about the sign of the summation index.
+       (with-new-context (context)
+         (let ((i (cdras 'i l)) (lo (cdras 'l l)) (hi (cdras 'h l)))
+           (unless (eq t (csign lo)) (assume (ftake 'mgeqp i lo)))
+           (unless (eq t (csign hi)) (assume (ftake 'mleqp i hi)))
            (mul (cdras 'c l)
                 (take '(%sum)
                       (sendexec 1 (cdras 'u l))
-                      (cdras 'i l)
-                      (cdras 'l l)
-                      (cdras 'h l))))
+                      i lo hi)))))
           
 	  ((setq l (m2-unit_step u *hypgeo-var*))
 	   ;; We have found the Unit Step function.
