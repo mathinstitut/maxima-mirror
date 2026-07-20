@@ -2508,7 +2508,7 @@
                         (< (caddr (cadr fm)) -1)
                         (alike1 (cadr (car x)) (cadr (cadr fm)))
                         (not (member ($csign (cadr (car x)))
-                                     '($complex imaginary))))
+                                     '($complex $imaginary))))
                    ;; 1/x^n*abs(x) -> 1/(x^(n-2)*abs(x)), where n an integer
                    ;; Replace 1/x^n -> 1/x^(n-2)
                    (setq temp (power (cadr (cadr fm))
@@ -2529,7 +2529,7 @@
                         (> (caddr (cadr fm)) 1)
                         (alike1 (cadr (car x)) (cadr (cadr fm)))
                         (not (member ($csign (cadr (car x)))
-                                     '($complex imaginary))))
+                                     '($complex $imaginary))))
                    ;; x^n/abs(x) -> x^(n-2)*abs(x), where n an integer.
                    ;; Replace x^n -> x^(n-2)
                    (setq temp (power (cadr (cadr fm)) 
@@ -2551,7 +2551,7 @@
                         (> (cadr x) 1)
                         (alike1 (cadadr (cadr fm)) (car x))
                         (not (member ($csign (cadadr (cadr fm)))
-                                     '($complex imaginary))))
+                                     '($complex $imaginary))))
                    ;; 1/abs(x)*x^n -> x^(n-2)*abs(x), where n an integer.
                    ;; Replace 1/abs(x) -> abs(x)
                    (setq temp (cadr (cadr fm)))
@@ -2583,7 +2583,7 @@
                  (< (cadr x) -1)
                  (alike1 (cadr (cadr fm)) (car x))
                  (not (member ($csign (cadr (cadr fm)))
-                                     '($complex imaginary))))
+                                     '($complex $imaginary))))
             ;; abs(x)/x^n -> 1/(x^(n-2)*abs(x)), where n an integer.
             ;; Replace abs(x) -> 1/abs(x).
             (setq temp (power (cadr fm) -1))

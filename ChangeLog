@@ -151,6 +151,7 @@ Bug fixes for numbered bugs:
  * \#4826 division by zero computing a Jacobi polynomial
  * \#4827 integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf) gives negative value
  * \#4828 Change of variable takes the wrong root / doubles without checking parity - wrong answers
+ * \#4829 j^2/abs(j) simplified incorrectly for j declared imaginary
 
 Bug fixes for unnumbered bugs:
 -----------------------------

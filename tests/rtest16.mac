@@ -3641,6 +3641,18 @@ trigreduce(1 - 1/x), numer;
 1 - 1/x;
 
 
+/* Bug #4829: "j^2/abs(j) simplified incorrectly for j declared imaginary" */
+
+declare(j, imaginary);
+done;
+
+j^2/abs(j);
+j^2/abs(j);
+
+remove(j, imaginary);
+done;
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$
