@@ -2286,6 +2286,20 @@ in the interval of integration.")
 	(cond ((setq b (intsc0 (cdr sc) b ivar))
 	       (m* (resimplify (car sc)) b))))))
 
+;; The factor (-1)^e in the reflection formulas of INTSC0: 1 or -1 for
+;; integer e (the same on every branch), and the simplified (-1)^e for a
+;; rational e with an odd denominator. Under the default domain:real the
+;; latter is the real branch (e.g. (-1)^(1/3) = -1, so
+;; integrate(sin(x)^(1/3)*cos(x)^(1/3),x,0,2*%pi) is 0 and not 4 times
+;; the quarter-period integral; with domain:complex it stays symbolic,
+;; so the caller's result remains valid under any branch convention.
+;; NIL if there is no real branch or we cannot tell.
+(defun exp-neg-1-real (e)
+  (cond
+    ((eq (ask-integer e '$even) '$yes) 1)
+    ((eq (ask-integer e '$odd) '$yes) -1)
+    ((and (ratnump e) (oddp (caddr e))) (m^ -1 e))))
+
 ;; integrate(sc, ivar, 0, b), where sc is f(sin(x), cos(x)).
 (defun intsc0 (sc b ivar)
   ;; Determine if sc is a product of sin's and cos's.
@@ -2308,21 +2322,16 @@ in the interval of integration.")
 			 (m* (m+ 1. (m^ -1 (cadr nn*)))
 			     (bygamma (car nn*) (cadr nn*))))))
 		 ((alike1 b %pi2)
-		  (cond ((or (and (eq (ask-integer (car nn*) '$even)
-				      '$yes)
-				  (eq (ask-integer (cadr nn*) '$even)
-				      '$yes))
-			     (and (ratnump (car nn*))
-				  (eq (real-branch (car nn*) -1)
-				      '$yes)
-				  (ratnump (cadr nn*))
-				  (eq (real-branch (cadr nn*) -1)
-				      '$yes)))
-			 (m* 4.	(bygamma (car nn*) (cadr nn*))))
-			((or (eq (ask-integer (car nn*) '$odd) '$yes)
-			     (eq (ask-integer (cadr nn*) '$odd) '$yes))
-			 0.)
-			(t nil)))
+           ;; integrate(sin^m*cos^n, x, 0, 2*%pi)
+           ;; = (1+(-1)^m)*(1+(-1)^n) * integrate(sin^m*cos^n, x, 0, %pi/2)
+           (let ((sm (exp-neg-1-real (car nn*)))
+                 (sn (exp-neg-1-real (cadr nn*))))
+             (cond
+               ((and sm sn)
+                 (m* (m+ 1 sm) (m+ 1 sn) (bygamma (car nn*) (cadr nn*))))
+               ((or (eq (ask-integer (car nn*) '$odd) '$yes)
+                    (eq (ask-integer (cadr nn*) '$odd) '$yes))
+                 0))))
 		 ((alike1 b half%pi3)
 		  ;; Wang, p. 111 says
 		  ;;
