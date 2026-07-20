@@ -864,8 +864,9 @@
                  ;; abs(z) = 0 <=> z = 0
                  (solve (cadr *myvar) *var mult)
                  (return nil))
-               ((eq exp-sign '$neg)
-                 ;; abs(z) can't be negative; no solution.
+               ((or (member exp-sign '($neg $imaginary))
+                    (eq t (mnqp 0 ($imagpart exp))))
+                 ;; abs(z) can't be negative or complex; no solution.
                  (return nil))
                ((not (member ($csign (cadr *myvar)) '($complex $imaginary)))
                  ;; abs(real) = EXP <=> real +- EXP = 0.

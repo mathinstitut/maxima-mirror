@@ -3653,6 +3653,15 @@ remove(j, imaginary);
 done;
 
 
+/* More solving of equations involving abs and signum */
+
+solve(abs(x) = %i, x);
+[];
+
+solve(abs(x) = %i + 1, x);
+[];
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$
