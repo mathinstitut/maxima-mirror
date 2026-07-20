@@ -1145,7 +1145,7 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 	  ((and (= (length aa) (length bb))
 		(every #'(lambda (p q) (eq t (meqp p q))) (margs aa) (margs bb))) t)
 	  ((set-not-eqp (margs aa) (margs bb)) nil)
-	  (t `(($equal ,a ,b))))))
+	  (t `(($equal) ,a ,b)))))
 
 (defun set-not-eqp (a b)
   (catch 'done
