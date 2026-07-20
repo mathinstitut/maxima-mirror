@@ -72,6 +72,7 @@ Bug fixes for numbered bugs:
  * \#4682 draw with terminal=epslatex_standalone generate faulty latex file
  * \#4683 lurkmathml does not typeset z[2]^3 correctly
  * \#4684 lurkmathml does not typeset x_1 correctly
+ * \#4687 integrate(1/x,x,-1,1) should issue Principal Value warning
  * \#4688 sign(zeroa) should be pos
  * \#4689 limit of a spherical_bessel_j function
  * \#4690 inverse_erf(erf(x)) and erf(inverse_erf(x)) don't simplify to x, even if x is real

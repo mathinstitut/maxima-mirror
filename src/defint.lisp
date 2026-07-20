@@ -604,7 +604,7 @@ in the interval of integration.")
 
 (defun principal-value-integral (exp ivar ll ul poles)
   (let ((anti-deriv nil))
-    (cond ((and (symmetric-intervalp ll ul) (oddfn exp ivar)) 0) ;odd integrand, symmetric interval
+    (cond ((and (symmetric-intervalp ll ul) (oddfn exp ivar)) (principal) 0) ;odd integrand, symmetric interval
 	((not (null (setq anti-deriv (antideriv exp ivar))))
 	   (cond ((not (null poles))
 		  (multiple-value-bind (ignore new-ll new-ul)
