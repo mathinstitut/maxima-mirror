@@ -6539,3 +6539,10 @@ true;
 
 risch(sqrt(sin(x)^2 - 1), x);
 %i*sin(x);
+
+
+/* Bug #4827: "integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf) gives negative value"
+   Note: A "divergent" error would be better! */
+
+integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf);
+'integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf);
