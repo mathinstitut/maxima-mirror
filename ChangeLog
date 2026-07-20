@@ -98,6 +98,7 @@ Bug fixes for numbered bugs:
  * \#4730 ei-asymptotic-expansion
  * \#4731 draw() does not work on new debian 13 installation
  * \#4732 histogram incorrectly normalized when frequency = density
+ * \#4734 histogram_description clobbers xrange
  * \#4735 rtest_limit_gruntz problem 21, line 121 has sign error in expected limit
  * \#4736 Taylor called on polygamma function with symbolic order
  * \#4737 atan2 with bfloat arg(s) is inconsistent on negative x-axis

@@ -2836,13 +2836,37 @@
       (gethash '%polar         *2d-graphic-objects*) 'polar
       (gethash '%image         *2d-graphic-objects*) 'image )
 
+;; Resolve suggest(opt = val) markers in a flattened scene list.
+;; A suggested option is applied only when that option is not also set
+;; explicitly elsewhere in the same scene (in any position), so scene
+;; builders can propose a default xrange/yrange/... without clobbering
+;; a user setting.
+(defun resolve-suggestions (largs)
+  (let (explicit result)
+    ;; Collect options explicitly set.
+    (dolist (x largs)
+      (when (and (consp x)
+                 (eq (caar x) 'mequal))
+        (push (cadr x) explicit)))
+    ;; Unpack instances of suggest(opt = val) to opt = val
+    ;; if opt isn't explicity set.
+    (dolist (x largs (nreverse result))
+      (if (and (consp x)
+               (eq (caar x) '%suggest)
+               (consp (cadr x))
+               (eq (caaadr x) 'mequal))
+        (let ((inner (cadr x)))
+          (unless (member (cadr inner) explicit :test #'eq)
+            (push inner result)))
+        (push x result)))))
+
 (defun make-scene-2d (args)
    (let ((objects nil)
          plotcmd largs aux)
       (ini-gr-options)
       (ini-local-option-variables)
       (user-defaults)
-      (setf largs (listify-arguments args))
+      (setf largs (resolve-suggestions (listify-arguments args)))
       ; update option values and detect objects to be plotted
       (dolist (x largs)
          (cond ((equal ($op x) "=")
@@ -3044,7 +3068,7 @@
       (ini-gr-options)
       (ini-local-option-variables)
       (user-defaults)
-      (setf largs (listify-arguments args))
+      (setf largs (resolve-suggestions (listify-arguments args)))
       ; update option values and detect objects to be plotted
       (dolist (x largs)
          (cond ((equal ($op x) "=")

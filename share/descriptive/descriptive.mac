@@ -1053,17 +1053,17 @@ histogram_description(m,[select]):=
                if my_htics = 'auto
                  then my_htics: []
                elseif my_htics = 'endpoints
-                 then my_htics: xtics = setify(fr[1])
+                 then my_htics: 'xtics = setify(fr[1])
                elseif my_htics = 'intervals
                  then ( lbels: [concat("[",fr[1][1],",",fr[1][2],"]")],
 			lbels: append(lbels, makelist(concat("(",fr[1][k],",",fr[1][k+1],"]"),k,2,num_classes)),
 			lbels: makelist([lbels[k],fr[1][k]+amp[k]/2],k,1,num_classes),
-			my_htics: xtics = makeset([a,b],[a,b],lbels) )
+			my_htics: 'xtics = makeset([a,b],[a,b],lbels) )
                elseif listp(my_htics)
                  then ( if length(my_htics) < num_classes
 		          then my_htics: append(my_htics, makelist("",k,length(my_htics)+1,num_classes)),
 		        lbels: makelist([my_htics[k],fr[1][k]+amp[k]/2],k,1,num_classes),
-		        my_htics: xtics = makeset([a,b],[a,b],lbels) ),
+		        my_htics: 'xtics = makeset([a,b],[a,b],lbels) ),
 
                histogram_bars: apply ('bars, makelist ([(fr[1][k] + fr[1][k + 1])/2, fr[2][k], amp[k]], k, 1, length (fr[1]) - 1)),
                histogram_drawing:
@@ -1072,8 +1072,8 @@ histogram_description(m,[select]):=
                        else ['fill_color = my_fill_color, 'fill_density = my_fill_density, histogram_bars],
 
                scen: append ([before,
-                              'xrange = [first(fr[1]), last(fr[1])] + [-1,+1] * mean(amp)/2,
-                              'yrange = lmax(fr[2])*[-0.05, 1.05],
+                              'suggest('xrange = [first(fr[1]), last(fr[1])] + [-1,+1] * mean(amp)/2),
+                              'suggest('yrange = lmax(fr[2])*[-0.05, 1.05]),
                               my_htics],
                              histogram_drawing))
 
@@ -1204,7 +1204,7 @@ barsplot_description([args]):=
         totalgap: nsamples + my_groups_gap,
         append(
            before,
-           [points([[my_start_at,0]]), xtics = 'none],
+           [points([[my_start_at,0]]), 'suggest('xtics = 'none)],
            makelist(
                 ['fill_color = my_bars_colors[m],
                  'key = my_sample_keys[m],
@@ -1226,7 +1226,7 @@ barsplot_description([args]):=
         freqs: map(lambda([z], reverse(makelist(block([s:0], for i:1 thru k do s: s+z[i], s),k,1,length(z)))), freqs),
         append(
            before,
-           [points([[my_start_at,0]]), xtics = 'none],
+           [points([[my_start_at,0]]), 'suggest('xtics = 'none)],
            makelist(
                 ['fill_color = my_bars_colors[m],
                  'key = my_sample_keys[m],
@@ -1441,12 +1441,12 @@ boxplot_description(m,[select]):=
               else [],
 
             if my_box_orientation = 'vertical
-              then [ 'xtics  = setify(makelist(k,k,1,tot)),
-                     'xrange = (tot-1)*0.05*[-1,+1.5]+[0.5,tot+0.5],
-                     'yrange = (top-bot)*0.05*[-1,+1]+[bot,top] ]
-              else [ 'ytics  = setify(makelist(k,k,1,tot)),
-                     'yrange = (tot-1)*0.05*[-1,+1.5]+[0.5,tot+0.5],
-                     'xrange = (top-bot)*0.05*[-1,+1]+[bot,top] ] ])
+              then [ 'suggest('xtics  = setify(makelist(k,k,1,tot))),
+                     'suggest('xrange = (tot-1)*0.05*[-1,+1.5]+[0.5,tot+0.5]),
+                     'suggest('yrange = (top-bot)*0.05*[-1,+1]+[bot,top]) ]
+              else [ 'suggest('ytics  = setify(makelist(k,k,1,tot))),
+                     'suggest('yrange = (tot-1)*0.05*[-1,+1.5]+[0.5,tot+0.5]),
+                     'suggest('xrange = (top-bot)*0.05*[-1,+1]+[bot,top]) ] ])
         else error("sorry, can't plot the box-whisker plot for these data"))$
 
 boxplot([desc]) := draw2d(apply(boxplot_description, desc)) $
