@@ -637,7 +637,7 @@
 	(t
 	 (let ((2pfma (2pistrip (car fm)))
 	       (2pfmd (2pirec (cdr fm))))
-	   (cond ((or (null 2pfmd) (=0 2pfmd)) 2pfma)
+	   (cond ((or (null 2pfmd) (=0 2pfmd)) (list 2pfma))
 		 ((and (eq 2pfmd (cdr fm)) (eq 2pfma (car fm))) fm)
 		 (t (cons 2pfma 2pfmd)))))))
 
