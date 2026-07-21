@@ -644,7 +644,11 @@
 		      (fixnump i) (fixnump j)
 		      (> m 0) (> n 0) (> i 0) (> j 0)))
 	    (merror (intl:gettext "ematrix: arguments must be positive integers; found ~M")
-		    (list '(mlist simp) m n i j) )))
+		    (list '(mlist simp) m n i j) ))
+	   ((or (> i m) (> j n))
+	    (merror (intl:gettext
+	             "ematrix: the entry position [~M, ~M] is outside a ~M by ~M matrix.")
+	            i j m n)))
      loop (cond ((= m i) (setq row (onen j n var 0)) (go on))
 		((zerop m) (return (cons '($matrix) (mxc ans)))))
      (setq row nil)
