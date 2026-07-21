@@ -745,7 +745,7 @@
 		 (take '(%atan)
 		       (if (eq (caar l) '%tan)
 			   (div (take '(%sinh) 2frst) (take '(%sin) 2scnd))
-			   (div (take '(%sin) 2frst) (take '(%sinh) 2scnd)))))))
+			   (div (take '(%sin) 2scnd) (take '(%sinh) 2frst)))))))
 	((specrepp l) (absarg (specdisrep l) absflag))
 	((let ((foot (coversinemyfoot l)))
 	   (and foot (not (=0 (cdr (risplit (cadr l))))) (absarg foot absflag))))

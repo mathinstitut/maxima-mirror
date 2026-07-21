@@ -3707,6 +3707,12 @@ false;
 done;
 
 
+/* Bug #4839: "absarg returns the wrong argument (phase) for tanh of a complex number" */
+
+closeto(rectform(tanh(2 + 3*%i)) - rectform(polarform(tanh(2 + 3*%i))), 1e-14);
+true;
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$
