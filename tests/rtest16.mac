@@ -3725,6 +3725,12 @@ sort([10^16+1, 1e16, 10^16-1]);
 [10^16-1, 1e16, 10^16+1];
 
 
+/* Bug #4833: "negative rational base + integral float exponent stays a noun" */
+
+(-1/2)^2.0;
+0.25;
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$

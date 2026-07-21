@@ -1946,6 +1946,8 @@
 	((and (numberp r1) (integerp r2)) (exptb r1 r2))
 	((and (numberp r1) (floatp r2) (equal r2 (float (floor r2))))
 	 (exptb (float r1) (floor r2)))
+	((and (ratnump r1) (floatp r2) (equal r2 (float (floor r2))))
+	 (exptb (fpcofrat r1) (floor r2)))
 	((or $numer (and (floatp r2) (or (plusp (num1 r1)) $numer_pbranch)))
 	 (let (y)
 	   (cond ((minusp (setq r1 (addk 0.0 r1)))
