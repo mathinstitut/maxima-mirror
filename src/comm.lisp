@@ -68,8 +68,9 @@
                   ;; A nested list.
                   ($psubstitute (cadr l) z))
                  ((and ($listp l)
-                       (eq (caar (cadr l)) 'mequal)
-                       (null (cddr l)))
+                       (null (cddr l))
+                       (not (atom (cadr l)))
+                       (eq (caar (cadr l)) 'mequal))
                   ;; A list with one equation.
                   ($psubstitute (cadr l) z))
                  ((notloreq l) (improper-arg-err l '$psubstitute))
@@ -85,7 +86,7 @@
                         ((null l) z)
                       (setq eqn (car l))
                       (when (not (eq 'mequal (caar eqn)))
-                        (improper-arg-err old '$substitute))
+                        (improper-arg-err old '$psubstitute))
                       (setq gensymbol (gensym))
                       ;; Store the gensym and the new expression into a list.
                       (push (cons gensymbol (caddr eqn)) genlist)
