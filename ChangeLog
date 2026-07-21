@@ -154,6 +154,7 @@ Bug fixes for numbered bugs:
  * \#4829 j^2/abs(j) simplified incorrectly for j declared imaginary
  * \#4834 integrate(sin(x)^(1/3)*cos(x)^(1/3), x, 0, 2*%pi) wrong
  * \#4836 Integer/parity inferencing through equal not working
+ * \#4838 risch returns incomplete noun form
  * \#4839 absarg returns the wrong argument (phase) for tanh of a complex number
  * \#4842 Risch integrator returns a noun for elementary ∫ eᵃ⁽ˣ⁾·r(x) dx
 

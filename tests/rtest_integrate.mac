@@ -6596,3 +6596,9 @@ risch(%e^(1/x)/x^3, x);
 
 risch(%e^(-1/x)/x^2, x);
 %e^-(1/x);
+
+
+/* Bug #4838: "risch returns incomplete noun form" */
+
+diff(risch(log(x)^2/(1+x) + log(x)/(x^2+x+1), x), x) - (log(x)^2/(1+x) + log(x)/(x^2+x+1));
+0;

@@ -374,8 +374,8 @@ integrate(log(a+b*z)^2/(e+f*z),z);
 -2*(-log(b*z+a)^2*log(1-f*(b*z+a)/(a*f-b*e))/2
    +li[3](f*(b*z+a)/(a*f-b*e))-log(b*z+a)*li[2](f*(b*z+a)/(a*f-b*e)))/f;
 
-integrate(1/z*log((a+b*z)/(c+d*z))^2,z);
-'integrate(1/z*log((a+b*z)/(c+d*z))^2,z);
+radcan(diff(integrate(1/z*log((a+b*z)/(c+d*z))^2,z), z) - 1/z*log((a+b*z)/(c+d*z))^2);
+0;
 
 integrate(log(z)*log(1-z)/z,z);
 li[3](z)-li[2](z)*log(z);
