@@ -292,7 +292,7 @@ L = ((A_1 ... A_N) (B_1 ... B_N) (C_1 ... C_N) ...), returns a list
 	       (t (rat-error "cnthroot error (should have been caught)"))))
 	((zerop c) c)
 	((zerop (cadr (setq c (iroot c n)))) (car c))
-	(t (rat-error "cnthroot error2 (should have been caught"))))
+	(t (rat-error "cnthroot error2 (should have been caught)"))))
 
 
 (defun pabs (x) (cond ((pminusp x) (pminus x)) (t x)))
