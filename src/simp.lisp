@@ -2852,10 +2852,14 @@
 	 (cond ((atom y)
 		(cond ((numberp x)
 		       (cond ((numberp y)
-			      ;; If x - y > 0, then x is "greater" than y.
-				  ;; If x - y = 0 and x is a float and y is not, then x is "greater" than y.
-			      (let ((diff (- x y)))
-			        (cond ((zerop diff) (and (floatp x) (not (floatp y)))) (t (plusp diff)))))))
+			      ;; X is "greater" than Y if X > Y numerically; if X and Y are
+			      ;; numerically equal, X is "greater" if it is a float and Y is not.
+			      ;; Compare exactly instead of testing the sign of X - Y: the
+			      ;; subtraction coerces a bignum operand to a float and can
+			      ;; overflow, e.g. for 1.0e300 vs. 10^400.
+			      (cond ((> x y) t)
+			            ((< x y) nil)
+			            (t (and (floatp x) (not (floatp y))))))))
 		      ((constant x)
 		       (cond ((constant y) (alphalessp y x)) (t (numberp y))))
 		      ((mget x '$scalar)
@@ -2908,7 +2912,11 @@
 (defun ordfna (e a)			; A is an atom
   (cond ((numberp a)
 	 (or (not (eq (caar e) 'rat))
-	     (> (cadr e) (* (caddr e) a))))
+	     ;; Compare exactly - CL comparisons of a rational against a
+	     ;; float are exact, whereas multiplying (CADDR E) into a
+	     ;; float A could overflow, e.g. when ordering 1/10^400
+	     ;; against 1.0.
+	     (> (/ (cadr e) (caddr e)) a)))
         ((and (not (member (caar e) '(mplus mtimes mexpt)))
               (constant a))
 	 (not (member (caar e) '(rat bigfloat))))

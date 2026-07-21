@@ -3713,6 +3713,18 @@ closeto(rectform(tanh(2 + 3*%i)) - rectform(polarform(tanh(2 + 3*%i))), 1e-14);
 true;
 
 
+/* Bug #4832: "great/ordfna: float vs. bignum ordering overflows instead of comparing" */
+
+sort([1e300, 10^400]);
+[1e300, 10^400];
+
+sort([1/10^400, 1.0]);
+[1/10^400, 1.0];
+
+sort([10^16+1, 1e16, 10^16-1]);
+[10^16-1, 1e16, 10^16+1];
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$
