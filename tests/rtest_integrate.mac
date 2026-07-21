@@ -6602,3 +6602,9 @@ risch(%e^(-1/x)/x^2, x);
 
 diff(risch(log(x)^2/(1+x) + log(x)/(x^2+x+1), x), x) - (log(x)^2/(1+x) + log(x)/(x^2+x+1));
 0;
+
+
+/* Bug #4844: "Can't integrate the derivative of fresnel_s(x)" */
+
+trigrat(diff(integrate(sin(x^2), x), x));
+sin(x^2);

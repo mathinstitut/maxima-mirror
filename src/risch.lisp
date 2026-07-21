@@ -226,7 +226,12 @@
       ;; as non-constant - keeping is always safe, dropping is not.
       (let ((yyy-re (if (car (errcatch (locally-const-p yyy-re))) 0 yyy-re))
             (yyy-im (if (car (errcatch (locally-const-p yyy-im))) 0 yyy-im)))
-      (setq result (sratsimp (add yyy-re (mul '$%i yyy-im)))))))
+      ;; If YYY-RE contains a noun-form %REALPART or YYY-IM contains a noun-form
+      ;; %IMAGPART, then just work with YYY instead of YYY-RE + %i * YYY-IM.
+      (setq result (sratsimp (if (and (freeof '%realpart yyy-re)
+                                      (freeof '%imagpart yyy-im))
+                               (add yyy-re (mul '$%i yyy-im))
+                               yyy))))))
       ;; The result can contain solvable integrals. Look for this case.
       (if (isinop result '%integrate)
           ;; Found an integral. Evaluate the result again.
