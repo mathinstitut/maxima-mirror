@@ -6298,8 +6298,8 @@ integrate (sin(x*cos(x)), x);
 domain: complex;
 complex;
 
-integrate ((log((x + 1)^p) + 1)^n, x);
-'integrate ((log((x + 1)^p) + 1)^n, x);
+radcan(diff(integrate((log((x + 1)^p) + 1)^n, x), x) - (log((x + 1)^p) + 1)^n);
+0;
 
 /* domain = real by default */
 reset (domain);
@@ -6581,3 +6581,18 @@ integrate(sin(x)^2*cos(x)^(2/3), x, 0, 2*%pi);
 /* Note: We subtract the expected answer and check for 0. */
 integrate(sin(x)^2*cos(x)^(2/3), x, 0, 2*%pi) - ((-1)^(2/3)+1)*beta(5/6,3/2), domain : complex;
 0;
+
+
+/* Bug #4842: "Risch integrator returns a noun for elementary ∫ eᵃ⁽ˣ⁾·r(x) dx" */
+
+risch(%e^(-1/x)/x^3, x);
+(%e^-(1/x)*(x+1))/x;
+
+risch(%e^(-1/x)/x^5, x);
+(%e^-(1/x)*(6*x^3+6*x^2+3*x+1))/x^3;
+
+risch(%e^(1/x)/x^3, x);
+(%e^(1/x)*(x-1))/x;
+
+risch(%e^(-1/x)/x^2, x);
+%e^-(1/x);

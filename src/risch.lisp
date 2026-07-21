@@ -893,7 +893,8 @@
      ;; of the array are initialized from the matrix MM.
      (mtoa '*jm* (length mm) d mm)
      (setq risch-m (tfgeli '*jm*  (length mm) d))
-     (cond ((or (and (null (car risch-m)) (null (cadr risch-m)))
+     (cond ((or (and (null (car risch-m)) (null (cadr risch-m))
+		     (< (length mm) (1- d)))
 		(and (car risch-m)
 		     (> (length (car risch-m)) (- (length mm) (1- d)))))
 	    (return (values 'singular risch-m)))
