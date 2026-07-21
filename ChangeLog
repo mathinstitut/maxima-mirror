@@ -158,6 +158,7 @@ Bug fixes for numbered bugs:
  * \#4838 risch returns incomplete noun form
  * \#4839 absarg returns the wrong argument (phase) for tanh of a complex number
  * \#4842 Risch integrator returns a noun for elementary ∫ eᵃ⁽ˣ⁾·r(x) dx
+ * \#4837 sign-sin / sign-cos return a strict sign at closed endpoints where the value is 0
 
 Bug fixes for unnumbered bugs:
 -----------------------------

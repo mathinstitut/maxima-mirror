@@ -1808,6 +1808,21 @@ neg;
 0;
 
 
+/* Bug #4837: "sign-sin / sign-cos return a strict sign at closed endpoints where the value is 0" */
+
+(assume(x > 0, x <= %pi, y > %pi/2, y <= 3*%pi/2), 0);
+0;
+
+sign(sin(x));
+pz;
+
+sign(cos(y));
+nz;
+
+(forget(x > 0, x <= %pi, y > %pi/2, y <= 3*%pi/2), killcontext(learndata), 0);
+0;
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]];

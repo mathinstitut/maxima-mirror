@@ -1976,7 +1976,14 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
              ((and (eql y 0)
                    (eq t (mgqp x (mul -1 '$%pi))) 
                    (eq t (mgqp '$%pi x)))
-                (sign x))
+                (sign x)
+                ;; sin(x) = 0 at the closed endpoints x = -%pi and %pi, so a
+                ;; strict interior sign weakens to include zero when x can reach
+                ;; the nearer endpoint.
+                (cond ((and (eq sign '$pos) (not (eq t (mgrp '$%pi x))))
+                       (setq sign '$pz odds (ncons e) evens nil minus nil))
+                      ((and (eq sign '$neg) (not (eq t (mgrp x (mul -1 '$%pi)))))
+                       (setq sign '$nz odds (ncons e) evens nil minus nil))))
               ;; When *complexsign* is true & y # 0, set sign to complex.
               ;; To test y # 0, we'll use (not (eql y 0)))
               ((and *complexsign* (not (eql y 0)))
@@ -1998,7 +2005,14 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
           ((and (eql y 0)
                 (eq t (mgqp x (div '$%pi -2))) 
                 (eq t (mgqp (div (mul 3 '$%pi) 2) x)))
-            (sign (sub (div '$%pi 2) x)))
+            (sign (sub (div '$%pi 2) x))
+            ;; cos(x) = 0 at the closed endpoints x = -%pi/2 and 3*%pi/2, so a
+            ;; strict interior sign weakens to include zero when x can reach
+            ;; that endpoint.
+            (cond ((and (eq sign '$pos) (not (eq t (mgrp x (div '$%pi -2)))))
+                   (setq sign '$pz odds (ncons e) evens nil minus nil))
+                  ((and (eq sign '$neg) (not (eq t (mgrp (div (mul 3 '$%pi) 2) x))))
+                   (setq sign '$nz odds (ncons e) evens nil minus nil))))
           ;; When *complexsign* is true & y # 0, set sign to complex.
           ;; To test y # 0, we'll use (not (eql y 0)))
           ((and *complexsign* (not (eql y 0)))
