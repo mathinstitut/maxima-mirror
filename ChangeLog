@@ -152,6 +152,7 @@ Bug fixes for numbered bugs:
  * \#4827 integrate(x^2*sin(x)^2/(x^2+1), x, minf, inf) gives negative value
  * \#4828 Change of variable takes the wrong root / doubles without checking parity - wrong answers
  * \#4829 j^2/abs(j) simplified incorrectly for j declared imaginary
+ * \#4831 ordlist: great returns T in both directions for alike sums
  * \#4832 great/ordfna: float vs. bignum ordering overflows instead of comparing
  * \#4834 integrate(sin(x)^(1/3)*cos(x)^(1/3), x, 0, 2*%pi) wrong
  * \#4836 Integer/parity inferencing through equal not working

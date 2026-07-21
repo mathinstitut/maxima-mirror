@@ -2940,7 +2940,10 @@
   (prog (l1 l2 c d)
      (setq l1 (length a) l2 (length b))
      loop (cond ((= l1 0)
-		 (return (cond ((= l2 0) (eq cx 'mplus))
+		 ;; Both lists exhausted with all elements pairwise ALIKE1:
+		 ;; the expressions are alike, so neither is "greater".
+		 ;; (Returning T here made GREAT non-antisymmetric for sums.)
+		 (return (cond ((= l2 0) nil)
 			       ((and (eq cx cy) (= l2 1))
 				(great (cond ((eq cx 'mplus) 0) (t 1)) (car b))))))
 		((= l2 0)
