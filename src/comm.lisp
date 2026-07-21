@@ -324,7 +324,6 @@
 	   (mul2 (factor (sdiff efact x)) (div e efact))))
 	((eq (caar e) '%integrate) (diffint e x))
 	((eq (caar e) '%laplace) (difflaplace e x))
-	((eq (caar e) '%at) (diff-%at e x))
 ; This rule is not correct. We cut it out.
 ;	((member (caar e) '(%realpart %imagpart) :test #'eq)
 ;	 (list (cons (caar e) nil) (sdiff (cadr e) x)))
