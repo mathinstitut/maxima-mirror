@@ -106,7 +106,7 @@
 	     ((eq a '$zero) (setq a 0)))
        (cond ((eq b '$pos) (setq b 1))
 	     ((eq b '$neg) (setq b -1))
-	     ((eq a '$zero) (setq b 0)))
+	     ((eq b '$zero) (setq b 0)))
        (cond ((equal i 0)
 	      (return (if (equal a 1) 0 (simplify '$%pi))))
 	     ((equal r 0)
