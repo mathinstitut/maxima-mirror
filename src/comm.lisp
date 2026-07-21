@@ -1058,7 +1058,7 @@
 					       (float (/ im scale))))))))))
 		 (t
 		  ;; log(n1/d1 + n2/d2*%i) =
-		  ;;   log(s*(n+m*%i)) = log(s) + log(n+m*%i)
+		  ;;   log((n+m*%i)/s) = log(n+m*%i) - log(s)
 		  ;;
 		  ;; where s = lcm(d1, d2), n and m are integers
 		  ;;
@@ -1066,8 +1066,8 @@
 		   (let* ((s (lcm ($denom re)
 			 	  ($denom im)))
 			      (p ($expand (mul s n))))
-		    (add ($float `((%log) ,s))
-			 ($float `((%log) ,p)))))))))
+		    (sub ($float `((%log) ,p))
+			 ($float `((%log) ,s)))))))))
 	((and (eq (caar e) '%erf)
 	      (eq (second e) '$%i))
 	 ;; Handle like erf(%i).  float(%i) (via recur-apply below)
