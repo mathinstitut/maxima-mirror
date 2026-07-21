@@ -315,9 +315,20 @@ flatten_conversion_equation (e%) := block
 equationp (e) := not atom (e) and op (e) = "=";
 
 compute_conversion_factor (u1%, u2%) :=
- (if conversions_to_base_units = 'conversions_to_base_units
-    then compute_conversions_to_base_units (),
-  ev (simplify_units (u1% / u2%), conversions_to_base_units));
+  block ([e%],
+    if conversions_to_base_units = 'conversions_to_base_units
+        then compute_conversions_to_base_units (),
+    e% : u1% / u2%,
+    /* Reduce u1/u2 to base units, then simplify.  Substitute only the
+     * definitions whose unit occurs in u1/u2 (each rhs is already fully
+     * reduced to base units, so one pass suffices; absent-lhs defs are no-ops)
+     * -- this replaces an ev over the entire hundreds-strong table on every
+     * conversion.  simplify_units must WRAP the substitution so unit positivity
+     * is applied to the base-unit result (sqrt(s^2) -> s, not abs(s)).  Uses
+     * freeof (not listofvars) so subscripted units such as 'Hz[S] match.
+     */
+    simplify_units (ev (e%, sublist (conversions_to_base_units,
+                                     lambda ([eq%], not freeof (lhs (eq%), e%))))));
 
 compute_conversions_to_base_units () :=
   conversions_to_base_units : listify (compute_conversions_to_base_units0 (known_unit_conversions));
@@ -478,9 +489,18 @@ defrule (ree1, 'dimensions (ee1%), dimensions (?mget (ee1%, 'numer)));
 defrule
    (rff,
     'dimensions (ff%), 
-    block
-      ([ff%2 : ev (ff%, args (known_unit_conversions), infeval)],
-        if ff%2 # ff% then dimensions (ff%2) else 'dimensions (ff%)));
+    /* Reduce the unit symbol to base units via the pre-computed, fully-reduced
+     * conversions_to_base_units table (a single assoc lookup) instead of the
+     * old ev(ff%, args(known_unit_conversions), infeval) -- an infinite-eval
+     * loop substituting the whole conversion list, the dominant cost in
+     * dimensions()/fundamental_units() (maxima-discuss 2026-05, Soegtrop/Dodier).
+     * dimensions is invariant under unit conversion, so this is equivalent.
+     */
+    (if conversions_to_base_units = 'conversions_to_base_units
+        then compute_conversions_to_base_units (),
+     block
+      ([ff%2 : assoc (ff%, conversions_to_base_units, ff%)],
+        if ff%2 # ff% then dimensions (ff%2) else 'dimensions (ff%))));
 defrule (rgg, 'dimensions (gg%), (constvalue (first (gg%)), if unitp (%%) then dimensions (second (%%)) else 1) * dimensions (second (gg%)));
 matchdeclare (aa%, all, bb%, constantp_not1);
 defrule (rhh, 'dimensions (aa%^bb%), dimensions (aa%) ^ bb%);
