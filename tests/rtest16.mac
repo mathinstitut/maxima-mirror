@@ -3662,6 +3662,51 @@ solve(abs(x) = %i + 1, x);
 [];
 
 
+/* Bug #4836: "Integer/parity inferencing through equal not working" */
+
+declare(i, integer, ni, noninteger, e, even, o, odd, ir, irrational);
+done;
+
+(forget(facts(x)), assume(equal(x, i)), featurep(x, integer));
+true;
+
+(forget(facts(x)), assume(equal(2*i, x)), featurep(x, integer));
+true;
+
+(forget(facts(x)), assume(equal(x, u)), assume(equal(x, i)), featurep(x, integer));
+true;
+
+(forget(facts(x)), assume(equal(x, ni)), featurep(x, noninteger));
+true;
+
+(forget(facts(x)), assume(equal(2*u, x)), assume(equal(x, ni)), featurep(x, noninteger));
+true;
+
+(forget(facts(x)), assume(equal(x, i)), featurep(x, noninteger));
+false;
+
+(forget(facts(x)), assume(equal(x, e)), featurep(x, even));
+true;
+
+(forget(facts(x)), assume(equal(o, x)), featurep(x, odd));
+true;
+
+(forget(facts(x)), assume(equal(x, u)), assume(equal(x, e)), featurep(x, even));
+true;
+
+(forget(facts(x)), assume(equal(x, ni)), featurep(x, even));
+false;
+
+(forget(facts(x)), assume(equal(x, ir)), featurep(x, noninteger));
+true;
+
+(forget(facts(x)), assume(equal(x, ir)), featurep(x, integer));
+false;
+
+(forget(facts(x)), remove(i, integer, ni, noninteger, e, even, o, odd, ir, irrational));
+done;
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$

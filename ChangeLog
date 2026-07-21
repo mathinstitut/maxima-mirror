@@ -153,6 +153,7 @@ Bug fixes for numbered bugs:
  * \#4828 Change of variable takes the wrong root / doubles without checking parity - wrong answers
  * \#4829 j^2/abs(j) simplified incorrectly for j declared imaginary
  * \#4834 integrate(sin(x)^(1/3)*cos(x)^(1/3), x, 0, 2*%pi) wrong
+ * \#4836 Integer/parity inferencing through equal not working
 
 Bug fixes for unnumbered bugs:
 -----------------------------

@@ -2256,48 +2256,42 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 		   ((or ($featurep ($verbify x-op) '$integervalued)
 			(get x-op 'integer-valued))))))))
 
-;; When called with mode 'integer look into the database for symbols which are 
-;; declared to be equal to an integer or an expression which is an integer.
-;; In mode 'evod look for odd and even expressions.
 (defun check-integer-facts (x &optional (mode 'integer))
-  (do ((factsl (cdr (facts1 x)) (cdr factsl))
-       fact)
-      ((null factsl) nil)
-    (setq fact (car factsl))
-    (cond ((and (not (atom fact))
-                (eq (caar fact) '$equal))
-           (cond ((and (symbolp (cadr fact))
-                       (eq (cadr fact) x))
-                  ;; Case equal(x,expr): Test expr to be an integer.
-                  (cond ((symbolp (caddr fact))
-                         (cond ((and (eq mode 'integer)
-                                     (kindp (caddr fact) '$integer))
-                                (return t))
-                               ((eq mode 'evod)
-                                (kind-any-of (caddr fact) '($even $odd)))
-                               (t (return nil))))
-                        (t
-                         (cond ((eq mode 'integer)
-                                (return (maxima-integerp (caddr fact))))
-                               ((eq mode 'evod)
-                                (return (evod (caddr fact))))
-                               (t (return nil))))))
-                 ((and (symbolp (caddr fact))
-                       (eq (caddr fact) x))
-                  ;; Case equal(expr,x): Test expr to be an integer.
-                  (cond ((symbolp (caddr fact))
-                         (cond ((and (eq mode 'integer)
-                                     (kindp (cadr fact) '$integer))
-                                (return t))
-                               ((eq mode 'evod)
-                                (kind-any-of (cadr fact) '($even $odd)))
-                               (t (return nil))))
-                        (t
-                         (cond ((eq mode 'integer)
-                                (return (maxima-integerp (cadr fact))))
-                               ((eq mode 'evod)
-                                (return (evod (cadr fact))))
-                               (t (return nil)))))))))))
+  "Checks the facts database for EQUAL(X, E) or EQUAL(E, X) facts, where E is
+  known to be integer/noninteger/even/odd. The return value depends on MODE:
+  * 'INTEGER: T iff we can prove equality of X to an integer.
+  * 'NONINTEGER: T iff we can prove equality of X to a noninteger.
+  * 'EVOD: '$EVEN/'$ODD iff we can prove equality of X to an even/odd integer.
+  When negative facts are encountered, e.g. equal(x, some_noninteger) in 'INTEGER
+  or 'EVOD mode, returns NIL."
+  (dolist (fact (cdr (facts1 x)))
+    (when (and (not (atom fact)) (eq (caar fact) '$equal))
+      (let ((e (cond ((eq (cadr fact)  x) (caddr fact))   ; equal(x, e)
+                     ((eq (caddr fact) x) (cadr fact))))) ; equal(e, x) -> normalize
+        (when e
+          (cond
+            ((member mode '(integer noninteger))
+             ;; "Is X an integer?" ('INTEGER) / "a noninteger?" ('NONINTEGER).
+             ;; Same detection for both. A decisive fact of EITHER kind ends the scan,
+             ;; so the opposite kind forces NIL. $INTEGER subsumes $EVEN/$ODD.
+             (let ((c (if (symbolp e)
+                        (kind-any-of e '($integer $noninteger))
+                        (cond
+                          ((maxima-integerp e) '$integer)
+                          ((nonintegerp e)     '$noninteger)))))
+               (when c
+                 (return (eq c (if (eq mode 'integer) '$integer '$noninteger))))))
+            ((eq mode 'evod)
+             ;; Parity of X. A noninteger E is decisive (X then has no parity).
+             ;; $INTEGER is omitted so it can't shadow $EVEN/$ODD.
+             (let ((c (if (symbolp e)
+                        (kind-any-of e '($even $odd $noninteger))
+                        (or (evod e) (if (nonintegerp e) '$noninteger)))))
+               (cond
+                 ((member c '($even $odd)) (return c))
+                 ((eq c '$noninteger)      (return nil)))))
+            (t
+             (merror "check-integer-facts: unknown mode: ~M" mode))))))))
 
 (defun nonintegerp (e)
   (cond ((and (symbolp e) (or (kindp e '$noninteger) (check-noninteger-facts e)))) ;declared noninteger
@@ -2311,26 +2305,7 @@ TDNEG TDZERO TDPN) to store it, and also sets SIGN."
 ;; Look into the database for symbols which are declared to be equal 
 ;; to a noninteger or an expression which is a noninteger.
 (defun check-noninteger-facts (x)
-  (do ((factsl (cdr (facts1 x)) (cdr factsl)))
-      ((null factsl) nil)
-    (cond ((and (not (atom (car factsl)))
-                (eq (caar (car factsl)) '$equal))
-           (cond ((and (symbolp (cadr (car factsl)))
-                       (eq (cadr (car factsl)) x))
-                  ;; Case equal(x,expr): Test expr to be a noninteger.
-                  (cond ((symbolp  (caddr (car factsl)))
-                         (if (kindp (caddr (car factsl)) '$noninteger)
-                             (return t)))
-                        (t
-                         (return (nonintegerp (caddr (car factsl)))))))
-                 ((and (symbolp (caddr (car factsl)))
-                       (eq (caddr (car factsl)) x))
-                  ;; Case equal(expr,x): Test expr to be a noninteger.
-                  (cond ((symbolp  (cadr (car factsl)))
-                         (if (kindp (cadr (car factsl)) '$noninteger)
-                             (return t)))
-                        (t
-                         (return (nonintegerp (cadr (car factsl))))))))))))
+  (check-integer-facts x 'noninteger))
 
 (defun intp (l)
   (every #'maxima-integerp (cdr l)))
