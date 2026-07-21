@@ -764,8 +764,8 @@
  "Dispatch the CL abs function to return |re + %i im|. The inputs re and im should be floating point numbers.
   We trust the compiler to work correctly for all double floats, including denormalized floats, and not needlessly
   over or underflow."
-  (cond ((zerop im) (abs im))
-        ((zerop re) (abs re))
+  (cond ((zerop im) (abs re))
+        ((zerop re) (abs im))
         (t (abs (complex re im)))))
 
 (defun hypotenuse (re im)
