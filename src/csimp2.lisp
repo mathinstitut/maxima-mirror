@@ -253,7 +253,7 @@
                        (setq u (truncate u)))
                   (and (numberp v)
                        (> v 0)
-                       (= (nth-value 1 (truncate u)) 0)
+                       (= (nth-value 1 (truncate v)) 0)
                        (not (and (mnump u)
 				 (eq ($sign (sub ($truncate u) u)) '$zero)
 				 (eq ($sign u) '$neg)
