@@ -3737,6 +3737,15 @@ is(abs(float(log(1/2 + %i/2)) - log(0.5 + 0.5 * %i)) < 1e-14);
 true;
 
 
+/* Bug #4847: "pop evaluates its argument twice, can cause bugs" */
+
+(i : 0, idx() := i : i + 1, L[1] : [1, 2, 3], L[2] : [4, 5, 6], [pop(L[idx()]), L[1], L[2]]);
+[1, [2, 3], [4, 5, 6]];
+
+kill(i, idx, L);
+done;
+
+
 /* Leave this at the end of the file! */
 [facts(), contexts];
 [[], [initial, global]]$

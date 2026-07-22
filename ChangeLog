@@ -164,6 +164,7 @@ Bug fixes for numbered bugs:
  * \#4844 Can't integrate the derivative of fresnel_s(x)
  * \#4845 float(log(1/2 + %i/2)) is wrong
  * \#4846 psubstitute doesn't validate its first argument
+ * \#4847 pop evaluates its argument twice, can cause bugs
 
 Bug fixes for unnumbered bugs:
 -----------------------------

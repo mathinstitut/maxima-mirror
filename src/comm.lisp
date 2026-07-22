@@ -1197,7 +1197,6 @@
 	  (t
 	   (setq lo l)
 	   (setq ll (meval lo))))
-    (setq ll (meval l))
     (cond ((and ($mapatom lo) ($listp ll))
 	   (if ($emptyp ll) (merror "Pop called on an empty list")
 	     (prog2
