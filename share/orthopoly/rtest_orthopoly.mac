@@ -784,7 +784,8 @@ for i : 1 thru 500 do (
    x : (random(11) - 5) / (1 + random(10)),
    exact : float(jacobi_p(n,a,b,x)),
    approx : jacobi_p(n,float(a),float(b),float(x)),
-   if (abs(exact-part(approx,1)) <= part(approx,2)) then foo : 0 else foo : 1,
+   /* double interval size to account for rounding of initial rationals */
+   if (abs(exact-part(approx,1)) <= 2*part(approx,2)) then foo : 0 else foo : 1,
    if (foo = 1) then print ("n = ",n, " a = ",a," b = ",b, "x = ",x),
    gomer : cons(foo,gomer)),
 check_zero_list(gomer));
