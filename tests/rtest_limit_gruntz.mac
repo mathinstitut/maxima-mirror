@@ -361,6 +361,13 @@ sqrt(%e)$
 limit(1/(exp(x)/(1+1/x)^x^2),x,inf);
 1/ sqrt(%e)$
 
+
+/* Bug #4108: "limit code & nondefault value of taylor_logexpand" */
+
+gruntz((1/%pi*(atan(n/%pi)+%pi/2))^n, n, inf), taylor_logexpand : false;
+%e^-1;
+
+
 /* Any leftover facts, contexts, or values? */
 facts();
 []$

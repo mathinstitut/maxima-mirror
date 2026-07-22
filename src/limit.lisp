@@ -4271,6 +4271,10 @@ ignoring dummy variables and array indices."
         ($taylordepth 8) 
         ($radexpand nil) 
         ($logexpand nil)
+        ;; Keep the user-level $TAYLOR_LOGEXPAND out of the Gruntz-internal
+        ;; series arithmetic; same policy and same guard as TLIMIT-TAYLOR
+        ;; (see the comment there).
+        ($taylor_logexpand (not (has-complex-singular-log-p exp var 0)))
         ($taylor_simplifier #'(lambda (q) (sratsimp (extra-simp q))))
         (was-internal (get var 'internal)))
     (unwind-protect 

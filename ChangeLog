@@ -24,6 +24,7 @@ Bug fixes for numbered bugs:
  * \#4067 integrate(sqrt(u)/(sqrt(u-u*v)),u) --> expt: undefined: 0 to a negative exponent
  * \#4085 limit((2-%i)^a/a!,a,inf);
  * \#4075 factor(...,p^2) => internal error
+ * \#4108 limit code & nondefault value of taylor_logexpand
  * \#4142 integrate(1/(x^4-%i),x) gives sign error
  * \#4169 spmod bug when algebraic is true
  * \#4170 Loading decfp breaks raddenest
