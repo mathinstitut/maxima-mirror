@@ -1989,7 +1989,7 @@ ignoring dummy variables and array indices."
                                       (m*l den-list-temp)))
                  (do ((dl den-list (cdr dl)))
                      ((null dl) t)
-                   (if (or (%einvolve (car nl)) (%einvolve (car nl)))
+                   (if (or (%einvolve (car nl)) (%einvolve (car dl)))
                        t
                        (let ((lim (catch 'limit (simpinf (simpab (limit (m// (car nl) (car dl))
                                                                         var val 'think))))))
