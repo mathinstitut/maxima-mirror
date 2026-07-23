@@ -3744,7 +3744,7 @@ ignoring dummy variables and array indices."
 (defun simplim%asin (e x pt)
   (let ((lim (limit (cadr e) x pt 'think)) (dir) (lim-sgn))
     (cond ((member lim '($zeroa $zerob)) lim) ;asin(zeoroa/b) = zeroa/b
-	  ((member lim '($minf '$inf '$infinity)) '$infinity)
+	  ((member lim '($minf $inf $infinity)) '$infinity)
 	  ((eq lim '$ind) '$ind)                 ;asin(ind)=ind 
 	  ((eq lim '$und) '$und)                 ;asin(und)=und
 	  ((in-domain-of-asin lim)               ;direct substitution

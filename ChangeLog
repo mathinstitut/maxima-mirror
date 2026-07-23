@@ -167,6 +167,7 @@ Bug fixes for numbered bugs:
  * \#4845 float(log(1/2 + %i/2)) is wrong
  * \#4846 psubstitute doesn't validate its first argument
  * \#4847 pop evaluates its argument twice, can cause bugs
+ * \#4857 simplim%asin: mis-quoted member list — asin(inf) / asin(infinity) never matched
 
 Bug fixes for unnumbered bugs:
 -----------------------------

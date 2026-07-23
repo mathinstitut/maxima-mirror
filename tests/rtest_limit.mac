@@ -1091,3 +1091,12 @@ tlimit(atan2(5*sin(4*x)-10*sin(2*x),5*cos(4*x)-10*cos(2*x)+1), x, 0, plus);
 -%pi;
 tlimit(atan2(5*sin(4*x)-10*sin(2*x),5*cos(4*x)-10*cos(2*x)+1), x, 0, minus);
 %pi;
+
+
+/* Bug #4857: "simplim%asin: mis-quoted member list — asin(inf) / asin(infinity) never matched" */
+
+limit(asin(x), x, inf);
+infinity;
+
+limit(asin(x), x, minf);
+infinity;
