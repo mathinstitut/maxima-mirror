@@ -2033,9 +2033,15 @@
 
 ;; log(1+x) for small x.  X is FP number, and a FP number is returned.
 (defun fplog1p (x)
-  ;; Use the same series as given above for fplog.  For small x we use
-  ;; the series, otherwise fplog is accurate enough.
-  (cond ((fpgreaterp (fpabs x) (fpone))
+  ;; Use the series (the same one as for FPLOG) only for -1/2 <= x <= 1,
+  ;; where the term ratio u^2 = (x/(x+2))^2 is at most 1/9 and the
+  ;; series converges quickly. Otherwise, fall back to FPLOG(1+x):
+  ;; For x >= 1, there is no cancellation in computing 1+x, and for
+  ;; -1 < x <= -1/2, the sum 1+x is exact, so nothing is lost.
+  ;; Using the series near x = -1 is catastrophic: u approaches -1,
+  ;; and convergence is extremely poor.
+  (cond ((or (fpgreaterp x (fpone))
+	     (fplessp x (fpminus (cdr *bfhalf*))))
 	 (fplog (fpplus x (fpone))))
 	(t
 	 (let* ((sum (intofp 0))
@@ -2435,9 +2441,6 @@
 (defun complex-log (x y)
   (let* ((x (cdr (bigfloatp x)))
 	 (y (cdr (bigfloatp y)))
-	 (t1 (let (($float2bf t))
-	       ;; No warning message, please.
-	       (floattofp 1.2)))
 	 (t2 (intofp 3))
 	 (rho (fpplus (fptimes* x x)
 		      (fptimes* y y)))
@@ -2445,8 +2448,13 @@
 	 (abs-y (fpabs y))
 	 (beta (fpmax abs-x abs-y))
 	 (theta (fpmin abs-x abs-y)))
-    (values (if (or (fpgreaterp t1 beta)
-		    (fplessp rho t2))
+	 ;; Use the log1p form only when rho = |z|^2 is near 1.
+	 ;; There, forming rho-1 as (beta-1)*(beta+1)+theta^2 avoids the
+	 ;; cancellation that log(rho) would suffer. For rho <= 1/2 - in particular
+	 ;; for small |z| - the LOG1P form is much less accurate.
+	 ;; Plain log(rho) is fast and fully accurate away from rho = 1.
+	 (values (if (and (fplessp (cdr *bfhalf*) rho)
+		     (fplessp rho t2))
 		(fpquotient (fplog1p (fpplus (fptimes* (fpdifference beta (fpone))
 						       (fpplus beta (fpone)))
 					     (fptimes* theta theta)))
